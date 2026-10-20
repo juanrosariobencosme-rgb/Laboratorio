@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Explora traslaciones, escalas y rotaciones geométricas en un laboratorio interactivo 2D.">
-<title>Laboratorio de Transformaciones Geométricas 2D - Código A03</title>
+<title>Laboratorio de Transformaciones Geométricas 2D</title>
 <link rel="stylesheet" href="./css/app.css">
   <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
 </head>
@@ -20,7 +20,6 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-bold tracking-tight text-white">Laboratorio de Transformaciones Geométricas</h1>
-            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-mono font-bold">Código A03</span>
           </div>
         </div>
       </div>
@@ -149,7 +148,7 @@
               <input type="number" id="in_Tdy" readonly class="w-full rounded-lg border border-blue-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-blue-950" aria-label="Desplazamiento vertical calculado dy">
             </label>
           </div>
-          <p id="translationStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa ambos triángulos finales T → S y S → T para calcular dx y dy.</p>
+          <p id="translationStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite"></p>
           <button id="btnClearTranslation" type="button" class="mt-1 text-[11px] font-semibold text-blue-700 hover:underline">Limpiar coordenadas T → S</button>
         </div>
 
@@ -209,7 +208,7 @@
                 <input type="number" id="in_Py" readonly class="w-full rounded-lg border border-amber-200 bg-slate-100 px-3 py-2 text-center font-mono text-slate-800" aria-label="Coordenada vertical calculada del pivote de escala Py">
               </label>
             </div>
-            <p id="scaleStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa ambos triángulos finales para calcular Sx, Sy y el pivote P.</p>
+            <p id="scaleStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite"></p>
             <button id="btnClearScale" type="button" class="mt-1 text-[11px] font-semibold text-amber-700 hover:underline">Limpiar coordenadas S → T</button>
           </div>
         </div>
@@ -382,9 +381,6 @@
           <div class="flex items-center gap-2.5">
             <span class="font-bold text-slate-800 flex items-center gap-1.5">
               <i class="fa-solid fa-compass-drafting text-indigo-600"></i> Plano Matemático
-            </span>
-            <span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] px-2 py-0.5 rounded-md font-mono">
-              Eje Y $\uparrow$ | Escala 1:1 fija
             </span>
           </div>
 

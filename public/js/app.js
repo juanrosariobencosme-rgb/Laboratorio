@@ -1163,8 +1163,8 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
         resetDefaults();
         state.T.valid = true;
         state.S.valid = true;
-        setCalculationStatus(translationStatus, 'Ingresa A_TS, B_TS, C_TS y también A_ST, B_ST, C_ST para calcular dx y dy.');
-        setCalculationStatus(scaleStatus, 'Ingresa ambas secuencias para calcular Sx, Sy y el pivote P.');
+        setCalculationStatus(translationStatus, '');
+        setCalculationStatus(scaleStatus, '');
         return;
       }
 

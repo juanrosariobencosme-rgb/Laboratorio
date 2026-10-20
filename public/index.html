@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Explora traslaciones, escalas y rotaciones geométricas en un laboratorio interactivo 2D.">
+<title>Laboratorio de Transformaciones Geométricas 2D - Código A03</title>
+<link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- ENCABEZADO SUPERIOR -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-shapes text-lg text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold tracking-tight text-white">Laboratorio de Transformaciones Geométricas</h1>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-mono font-bold">Código A03</span>
+          </div>
+          <p class="text-xs text-slate-400">Plano matemático 1:1 ($Y \uparrow$), desglose aritmético manual, validador de consigna y pizarra</p>
+        </div>
+      </div>
+      
+      <!-- BOTONES DE EXPORTACIÓN Y VISTA -->
+      <div class="flex items-center flex-wrap gap-2">
+        <button id="btnResetCenter" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5 shadow-sm" title="Centrar el plano">
+          <i class="fa-solid fa-crosshairs"></i> Centrar
+        </button>
+        <button id="btnExportPNG" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm" title="Descargar imagen PNG del plano">
+          <i class="fa-solid fa-image"></i> Descargar Imagen PNG
+        </button>
+        <button id="btnExportSVG" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm" title="Descargar SVG editable con capas para Inkscape">
+          <i class="fa-solid fa-file-code"></i> Descargar SVG (Inkscape)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 py-4 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- COLUMNA IZQUIERDA: ENTRADAS Y PARÁMETROS DINÁMICOS (4 cols) -->
+    <div class="lg:col-span-4 space-y-4">
+      
+      <!-- 1. VÉRTICES ORIGINALES (A, B, C) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-100">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span> 1. Vértices Originales (A, B, C)
+          </h2>
+          <span class="text-[11px] font-mono text-slate-400">Y hacia arriba</span>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <!-- Vértice A -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="font-bold text-slate-800 text-center mb-1 flex items-center justify-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-slate-800"></span> A
+            </div>
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">x:</span>
+                <input type="number" id="in_Ax" value="2" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">y:</span>
+                <input type="number" id="in_Ay" value="1" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Vértice B -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="font-bold text-slate-800 text-center mb-1 flex items-center justify-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-slate-800"></span> B
+            </div>
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">x:</span>
+                <input type="number" id="in_Bx" value="4" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">y:</span>
+                <input type="number" id="in_By" value="1" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Vértice C -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="font-bold text-slate-800 text-center mb-1 flex items-center justify-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-slate-800"></span> C
+            </div>
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">x:</span>
+                <input type="number" id="in_Cx" value="2" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-mono text-[11px]">y:</span>
+                <input type="number" id="in_Cy" value="3" step="0.5" class="w-14 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-mono font-semibold focus:outline-indigo-500">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. TRASLACIÓN Y ESCALA -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3.5">
+        
+        <!-- TRASLACIÓN T -->
+        <div>
+          <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-up-down-left-right text-xs"></i> 2. Traslación T = (dx, dy)
+            </h2>
+            <span class="text-[11px] text-slate-400">Desplazamiento</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center justify-between bg-blue-50/60 border border-blue-200 rounded-xl p-2">
+              <span class="font-bold text-blue-900 font-mono text-xs">dx:</span>
+              <input type="number" id="in_Tdx" value="1" step="0.5" class="w-16 bg-white border border-blue-300 rounded px-2 py-0.5 text-center font-mono font-bold text-blue-950 focus:outline-blue-500">
+            </div>
+            <div class="flex items-center justify-between bg-blue-50/60 border border-blue-200 rounded-xl p-2">
+              <span class="font-bold text-blue-900 font-mono text-xs">dy:</span>
+              <input type="number" id="in_Tdy" value="2" step="0.5" class="w-16 bg-white border border-blue-300 rounded px-2 py-0.5 text-center font-mono font-bold text-blue-950 focus:outline-blue-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- ESCALA S Y PIVOTE P -->
+        <div>
+          <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-up-right-and-down-left-from-center text-xs"></i> 3. Escala S y Pivote P
+            </h2>
+            <span class="text-[11px] text-slate-400">Factores</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+            <div class="flex items-center justify-between bg-amber-50/60 border border-amber-200 rounded-xl p-2">
+              <span class="font-bold text-amber-900 font-mono text-xs">Sx:</span>
+              <input type="number" id="in_Sx" value="2" step="0.5" class="w-16 bg-white border border-amber-300 rounded px-2 py-0.5 text-center font-mono font-bold text-amber-950 focus:outline-amber-500">
+            </div>
+            <div class="flex items-center justify-between bg-amber-50/60 border border-amber-200 rounded-xl p-2">
+              <span class="font-bold text-amber-900 font-mono text-xs">Sy:</span>
+              <input type="number" id="in_Sy" value="2" step="0.5" class="w-16 bg-white border border-amber-300 rounded px-2 py-0.5 text-center font-mono font-bold text-amber-950 focus:outline-amber-500">
+            </div>
+          </div>
+          
+          <!-- Pivote P -->
+          <div class="bg-amber-50/40 border border-amber-200/70 rounded-xl p-2.5 text-xs">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                <i class="fa-solid fa-crosshairs text-[10px]"></i> Pivote de Escala P = (Px, Py):
+              </span>
+              <button id="btnPtoOrigin" class="text-[11px] text-amber-700 font-semibold hover:underline bg-white px-2 py-0.5 rounded border border-amber-200 shadow-2xs">Fijar en (0,0)</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-amber-800 font-mono text-[11px]">Px:</span>
+                <input type="number" id="in_Px" value="0" step="0.5" class="w-16 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-amber-500">
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-amber-800 font-mono text-[11px]">Py:</span>
+                <input type="number" id="in_Py" value="0" step="0.5" class="w-16 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-amber-500">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROTACIÓN R Y PIVOTE K -->
+        <div>
+          <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate text-xs"></i> 4. Rotación R y Pivote K
+            </h2>
+            <span class="text-[11px] text-slate-400">Regla C03/09 & C03/11</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ángulo:</label>
+              <select id="in_Rangle" class="w-full bg-white border border-rose-200 rounded-lg p-1.5 font-mono font-bold text-rose-900 focus:outline-rose-500">
+                <option value="90" selected>90°</option>
+                <option value="180">180°</option>
+                <option value="270">270° (-90°)</option>
+                <option value="45">45°</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Sentido:</label>
+              <select id="in_Rdir" class="w-full bg-white border border-rose-200 rounded-lg p-1.5 font-semibold text-slate-800 focus:outline-rose-500">
+                <option value="antihorario" selected>Antihorario (+)</option>
+                <option value="horario">Horario (-)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Pivote K -->
+          <div class="bg-rose-50/40 border border-rose-200/70 rounded-xl p-2.5 text-xs mb-2">
+            <span class="text-[11px] font-bold text-rose-900 block mb-1.5 flex items-center gap-1">
+              <i class="fa-solid fa-location-crosshairs text-[10px]"></i> Pivote de Giro K = (Kx, Ky):
+            </span>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-rose-800 font-mono text-[11px]">Kx:</span>
+                <input type="number" id="in_Kx" value="2" step="0.5" class="w-16 bg-white border border-rose-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-rose-500">
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-rose-800 font-mono text-[11px]">Ky:</span>
+                <input type="number" id="in_Ky" value="2" step="0.5" class="w-16 bg-white border border-rose-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-rose-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Figura sobre la que se rota -->
+          <div class="text-xs">
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Aplicar giro sobre la figura:</label>
+            <select id="in_Rtarget" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-indigo-500">
+              <option value="orig" selected>1. Triángulo Original</option>
+              <option value="t">2. Solo Traslación (T)</option>
+              <option value="s">3. Solo Escala (S)</option>
+              <option value="ts">4. Secuencia T → S</option>
+              <option value="st">5. Secuencia S → T</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. VISIBILIDAD DE CAPAS EN EL PLANO -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-slate-400"></i> Capas Visibles en el Plano
+          </h3>
+          <button id="btnToggleAllLayers" class="text-[11px] text-indigo-600 font-medium hover:underline">Alternar</button>
+        </div>
+
+        <div class="space-y-1.5 text-xs">
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-slate-900 border border-black shadow-2xs"></span>
+              <span class="font-bold text-slate-900">Original (A, B, C)</span>
+            </span>
+            <input type="checkbox" id="layer_orig" checked class="w-4 h-4 rounded text-indigo-600 accent-indigo-600 cursor-pointer">
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50/50 cursor-pointer border border-transparent hover:border-blue-100 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-blue-600 shadow-2xs"></span>
+              <span class="font-semibold text-blue-900">Solo Traslación (T)</span>
+            </span>
+            <input type="checkbox" id="layer_t" checked class="w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer">
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-amber-50/50 cursor-pointer border border-transparent hover:border-amber-100 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-amber-500 shadow-2xs"></span>
+              <span class="font-semibold text-amber-900">Solo Escala (S)</span>
+            </span>
+            <input type="checkbox" id="layer_s" checked class="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer">
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-emerald-50/50 cursor-pointer border border-emerald-100 bg-emerald-50/30 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-emerald-600 shadow-2xs"></span>
+              <span class="font-bold text-emerald-950">Secuencia T → S</span>
+            </span>
+            <input type="checkbox" id="layer_ts" checked class="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer">
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-purple-50/50 cursor-pointer border border-purple-100 bg-purple-50/30 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-purple-600 shadow-2xs"></span>
+              <span class="font-bold text-purple-950">Secuencia S → T</span>
+            </span>
+            <input type="checkbox" id="layer_st" checked class="w-4 h-4 rounded text-purple-600 accent-purple-600 cursor-pointer">
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-rose-50/50 cursor-pointer border border-rose-100 bg-rose-50/30 transition">
+            <span class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-md bg-rose-600 shadow-2xs"></span>
+              <span class="font-bold text-rose-950">Rotación R</span>
+            </span>
+            <input type="checkbox" id="layer_r" checked class="w-4 h-4 rounded text-rose-600 accent-rose-600 cursor-pointer">
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA: PLANO CARTESIANO Y PESTAÑAS (8 cols) -->
+    <div class="lg:col-span-8 space-y-4">
+      
+      <!-- CONTENEDOR DEL CANVAS CARTESIANO -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+        <div class="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-compass-drafting text-indigo-600"></i> Plano Matemático
+            </span>
+            <span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] px-2 py-0.5 rounded-md font-mono">
+              Eje Y $\uparrow$ | Escala 1:1 fija
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div id="liveCoordsBadge" class="font-mono text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs font-semibold">
+              X: 0.00, Y: 0.00
+            </div>
+            <div class="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
+              <button id="btnZoomIn" class="px-2.5 py-1 hover:bg-slate-100 font-bold border-r border-slate-200 text-slate-700" title="Acercar">+</button>
+              <button id="btnZoomOut" class="px-2.5 py-1 hover:bg-slate-100 font-bold text-slate-700" title="Alejar">-</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Área de Canvas interactivo -->
+        <div class="relative w-full h-[470px] bg-slate-950 overflow-hidden">
+          <canvas id="cartesianCanvas" class="w-full h-full block bg-white"></canvas>
+
+          <!-- Indicador superior de pivotes -->
+          <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 text-[11px] font-mono flex items-center gap-3 pointer-events-none">
+            <span class="text-amber-800 font-bold">P(Escala): <span id="labelScalePivot">(0;0)</span></span>
+            <span class="text-slate-300">|</span>
+            <span class="text-rose-800 font-bold">K(Giro): <span id="labelRotPivot">(2;2)</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS: TABLA, FÓRMULAS PASO A PASO, PIZARRA, MANDATO E INFORME -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Barra de navegación de pestañas -->
+        <div class="flex flex-wrap border-b border-slate-200 bg-slate-50 text-xs">
+          <button id="tab_table" class="tab-btn active px-4 py-3 border-b-2 flex items-center gap-2 transition">
+            <i class="fa-solid fa-table-list"></i> Tabla de Coordenadas
+          </button>
+          <button id="tab_formulas" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
+            <i class="fa-solid fa-calculator"></i> Cálculos Paso a Paso (Manual)
+          </button>
+          <button id="tab_scratchpad" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
+            <i class="fa-solid fa-pen-to-square"></i> Pizarra / Bloc de Cálculos
+          </button>
+          <button id="tab_mandate" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-lines"></i> Mandato del Maestro
+          </button>
+          <button id="tab_report" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
+            <i class="fa-solid fa-clipboard-check"></i> Informe y Validación
+          </button>
+        </div>
+
+        <!-- 1. PESTAÑA: TABLA DE COORDENADAS -->
+        <div id="panel_table" class="p-4 space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                  <th class="p-3 border">Vértice</th>
+                  <th class="p-3 border bg-slate-50 text-slate-900">Original</th>
+                  <th class="p-3 border text-blue-700">Solo T</th>
+                  <th class="p-3 border text-amber-700">Solo S</th>
+                  <th class="p-3 border text-emerald-800 bg-emerald-50/60 font-bold">Después de T → S</th>
+                  <th class="p-3 border text-purple-800 bg-purple-50/60 font-bold">Después de S → T</th>
+                  <th class="p-3 border text-rose-800 bg-rose-50/60 font-bold">Rotación R</th>
+                </tr>
+              </thead>
+              <tbody id="coordsTableBody" class="font-mono divide-y divide-slate-100">
+                <!-- Inyectado dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. PESTAÑA: CÁLCULOS PASO A PASO (ULTRA DETALLADO PARA HACER A MANO) -->
+        <div id="panel_formulas" class="p-4 space-y-5 hidden">
+          
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-950 flex items-center gap-2.5">
+            <i class="fa-solid fa-graduation-cap text-indigo-600 text-base"></i>
+            <div>
+              <p class="font-bold">Guía para realizar tus cálculos a mano en el cuaderno:</p>
+              <p class="text-[11px] text-indigo-800">Aquí tienes cada operación aritmética detallada paso a paso, con las restas de pivote, multiplicaciones y sumas finales sustituyendo tus valores reales.</p>
+            </div>
+          </div>
+
+          <!-- Contenedor dinámico de desglose vértice por vértice -->
+          <div id="manualCalculationsContainer" class="space-y-4">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <!-- 3. PESTAÑA: PIZARRA / BLOC DE APUNTES Y CÁLCULOS MANUALES -->
+        <div id="panel_scratchpad" class="p-4 space-y-3 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-chalkboard-user text-indigo-600"></i> Pizarra Libre de Cálculos y Registro de Medidas
+              </h3>
+              <p class="text-xs text-slate-500">Anota tus cálculos manuales, operaciones intermedias o medidas utilizadas. Se guardan automáticamente en tu navegador.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnInsertCalculationsToBoard" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-solid fa-arrow-down-to-bracket"></i> Pegar Cálculos Actuales a la Pizarra
+              </button>
+              <button id="btnClearScratchpad" class="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                <i class="fa-solid fa-eraser"></i> Limpiar
+              </button>
+            </div>
+          </div>
+
+          <textarea id="scratchpadArea" rows="14" placeholder="Escribe aquí tus cálculos manuales, notas de clase, o presiona 'Pegar Cálculos Actuales a la Pizarra' para tener una copia exacta de las medidas que utilizaste..." class="w-full p-3 font-mono text-xs bg-slate-900 text-emerald-400 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
+          
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>Registro seguro local (LocalStorage activado)</span>
+            <span id="scratchpadSaveStatus" class="text-emerald-600 font-semibold hidden"><i class="fa-solid fa-check"></i> Guardado automático</span>
+          </div>
+        </div>
+
+        <!-- 4. PESTAÑA: MANDATO DEL MAESTRO (PEGAR O EDITAR) -->
+        <div id="panel_mandate" class="p-4 space-y-3 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-circle-check text-indigo-600"></i> Mandato / Consigna Oficial del Maestro
+              </h3>
+              <p class="text-xs text-slate-500">Puedes pegar o modificar las instrucciones del maestro aquí para contrastar los requerimientos de la entrega.</p>
+            </div>
+            <button id="btnResetDefaultMandate" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-xs font-medium border border-slate-300">
+              Restablecer Mandato Original
+            </button>
+          </div>
+
+          <textarea id="mandateTextArea" rows="14" class="w-full p-3.5 font-mono text-xs bg-slate-50 text-slate-800 rounded-xl border border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
+          
+          <div class="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-info-circle text-blue-600"></i>
+            <span>Ve a la pestaña <strong>"Informe y Validación"</strong> para ver si tu configuración actual cumple todos los puntos de esta consigna.</span>
+          </div>
+        </div>
+
+        <!-- 5. PESTAÑA: INFORME Y VALIDACIÓN -->
+        <div id="panel_report" class="p-4 space-y-4 hidden">
+          <!-- Tarjeta de Validación de Requisitos -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-indigo-600"></i> Comprobación y Validación del Mandato
+              </h3>
+              <span id="validatorSummaryPill" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                Verificando...
+              </span>
+            </div>
+
+            <div id="validationCardsContainer" class="space-y-2 text-xs">
+              <!-- Inyectado por JS -->
+            </div>
+          </div>
+
+          <!-- Documento Entregable Oficial -->
+          <div class="pt-3 border-t border-slate-200 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <i class="fa-solid fa-file-signature text-indigo-600"></i> Informe Entregable Generado
+                </h4>
+                <p class="text-xs text-slate-500">Documento formal con código A03, tabla de vértices y justificación teórica listo para copiar</p>
+              </div>
+              <button id="btnCopyFinalReport" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-regular fa-copy"></i> Copiar Informe
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Nombre del Estudiante:</label>
+                <input type="text" id="reportStudentName" value="Estudiante de Gráficos" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 font-medium">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Institución / Asignatura:</label>
+                <input type="text" id="reportCourseName" value="Laboratorio de Transformaciones 2D - Código A03" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 font-medium">
+              </div>
+            </div>
+
+            <textarea id="finalReportArea" rows="12" class="w-full p-3 font-mono text-xs bg-slate-900 text-slate-100 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
+            
+            <div id="copyToast" class="hidden text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg font-bold flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i> ¡Informe formal copiado al portapapeles con éxito!
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- LÓGICA JAVASCRIPT COMPLETA -->
+  <script defer src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules/
+public/css/app.css
+public/vendor/
+.env
+.env.*
+!.env.example
+npm-debug.log*

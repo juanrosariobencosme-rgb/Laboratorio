@@ -5,8 +5,8 @@
       B: { x: null, y: null },
       C: { x: null, y: null },
       // Parámetros
-      T: { dx: 0, dy: 0 },
-      S: { sx: 1, sy: 1, px: 0, py: 0 },
+      T: { dx: 0, dy: 0, valid: true },
+      S: { sx: 1, sy: 1, px: 0, py: 0, valid: true },
       R: { angle: null, dir: '', kx: null, ky: null, target: '' },
       // Visibilidad de capas
       layers: {
@@ -25,12 +25,21 @@
         st: { name: '', color: '#7c3aed' },
         r: { name: '', color: '#e11d48' }
       },
+      figureLabelOffsets: {
+        orig: { x: 0, y: 0 },
+        t: { x: 0, y: 0 },
+        s: { x: 0, y: 0 },
+        ts: { x: 0, y: 0 },
+        st: { x: 0, y: 0 },
+        r: { x: 0, y: 0 }
+      },
       // Navegación en el plano (pan y zoom)
       view: {
         scale: 28, // Píxeles por unidad (1:1 aspect ratio garantizado)
         originX: 120,
         originY: 340,
         isDragging: false,
+        draggingLabel: '',
         startX: 0,
         startY: 0
       }
@@ -116,6 +125,7 @@
 
     // Calcula todas las figuras
     function computeGeometry() {
+      if (!state.T.valid || !state.S.valid) return null;
       if (![state.A.x, state.A.y, state.B.x, state.B.y, state.C.x, state.C.y].every(Number.isFinite)) {
         return null;
       }
@@ -172,6 +182,14 @@
         : targetPts;
 
       return { orig, tOnly, sOnly, tsInter, tsFinal, stInter, stFinal, rotFinal, targetPts, targetName, rotationEnabled };
+    }
+
+    function getFigureLabelAnchor(points, key) {
+      const offset = state.figureLabelOffsets[key];
+      return {
+        x: points.reduce((total, point) => total + point.x, 0) / points.length + offset.x,
+        y: points.reduce((total, point) => total + point.y, 0) / points.length + offset.y
+      };
     }
 
     function getVisibleExportLayers(data) {
@@ -416,12 +434,15 @@
         });
 
         if (name.trim()) {
-          const cx = (pts[0].x + pts[1].x + pts[2].x) / 3;
-          const cy = (pts[0].y + pts[1].y + pts[2].y) / 3;
-          const centerCanvas = toCanvas(cx, cy);
+          const labelAnchor = getFigureLabelAnchor(pts, layerKey);
+          const labelCanvas = toCanvas(labelAnchor.x, labelAnchor.y);
+          ctx.save();
           ctx.fillStyle = color;
           ctx.font = "bold 10px Inter, sans-serif";
-          ctx.fillText(name.trim(), centerCanvas.cx - ctx.measureText(name.trim()).width / 2, centerCanvas.cy);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(name.trim(), labelCanvas.cx, labelCanvas.cy);
+          ctx.restore();
         }
       }
 
@@ -469,6 +490,34 @@
       }
 
       ctx.restore();
+    }
+
+    function findFigureLabelAt(x, y) {
+      const data = computeGeometry();
+      if (!data) return '';
+      const visibleLayers = [
+        { key: 'orig', points: data.orig },
+        { key: 't', points: data.tOnly },
+        { key: 's', points: data.sOnly },
+        { key: 'ts', points: data.tsFinal },
+        { key: 'st', points: data.stFinal },
+        ...(data.rotationEnabled ? [{ key: 'r', points: data.rotFinal }] : [])
+      ].filter(layer => state.layers[layer.key] && state.figureStyles[layer.key].name.trim());
+
+      ctx.save();
+      ctx.font = "bold 10px Inter, sans-serif";
+      for (const layer of visibleLayers.reverse()) {
+        const anchor = getFigureLabelAnchor(layer.points, layer.key);
+        const center = toCanvas(anchor.x, anchor.y);
+        const width = ctx.measureText(state.figureStyles[layer.key].name.trim()).width;
+        if (x >= center.cx - width / 2 - 6 && x <= center.cx + width / 2 + 6 &&
+            y >= center.cy - 10 && y <= center.cy + 10) {
+          ctx.restore();
+          return layer.key;
+        }
+      }
+      ctx.restore();
+      return '';
     }
 
     // 3. ACTUALIZACIÓN DINÁMICA DE TABLAS, CÁLCULOS MANUALES Y VALIDADOR
@@ -827,10 +876,9 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
           out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">${p.name}${suffix}(${p.x};${p.y})</text>\n`;
         });
         if (layer.name) {
-          const centerX = layer.points.reduce((total, point) => total + point.x, 0) / layer.points.length;
-          const centerY = layer.points.reduce((total, point) => total + point.y, 0) / layer.points.length;
-          const center = toSvg(centerX, centerY);
-          out += `    <text x="${center.sx}" y="${center.sy}" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="${layer.stroke}">${escapeXml(layer.name)}</text>\n`;
+          const anchor = getFigureLabelAnchor(layer.points, layer.key);
+          const label = toSvg(anchor.x, anchor.y);
+          out += `    <text x="${label.sx}" y="${label.sy}" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="12" font-weight="bold" fill="${layer.stroke}">${escapeXml(layer.name)}</text>\n`;
         }
         out += `  </g>\n`;
         return out;
@@ -958,13 +1006,14 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
           ctx.fillText(`${point.name}${suffix}(${point.x};${point.y})`, mapped.x + 7, mapped.y - 7);
         }
 
-        const centerX = layer.points.reduce((total, point) => total + point.x, 0) / layer.points.length;
-        const centerY = layer.points.reduce((total, point) => total + point.y, 0) / layer.points.length;
-        const center = frame.toCanvas(centerX, centerY);
         if (layer.name) {
+          const anchor = getFigureLabelAnchor(layer.points, layer.key);
+          const labelPoint = frame.toCanvas(anchor.x, anchor.y);
           ctx.fillStyle = layer.stroke;
           ctx.font = 'bold 12px sans-serif';
-          ctx.fillText(layer.name, center.x - ctx.measureText(layer.name).width / 2, center.y);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(layer.name, labelPoint.x, labelPoint.y);
         }
         ctx.restore();
       }
@@ -1008,6 +1057,165 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       return Number.isFinite(number) ? number : null;
     }
 
+    function setCalculationStatus(element, message, isError = false) {
+      element.textContent = message;
+      element.classList.toggle('text-rose-700', isError);
+      element.classList.toggle('text-slate-500', !isError);
+    }
+
+    function formatCalculatedNumber(value) {
+      const rounded = Math.round(value * 1e6) / 1e6;
+      return String(Object.is(rounded, -0) ? 0 : rounded);
+    }
+
+    function deriveTranslationParameters() {
+      const coordinateIds = ['in_TAx', 'in_TAy', 'in_TBx', 'in_TBy', 'in_TCx', 'in_TCy'];
+      const values = coordinateIds.map(readNumericInput);
+      const outputIds = ['in_Tdx', 'in_Tdy'];
+      const status = document.getElementById('translationStatus');
+      const entered = values.filter(value => value !== null).length;
+
+      if (entered === 0) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.T.dx = 0;
+        state.T.dy = 0;
+        state.T.valid = true;
+        setCalculationStatus(status, 'Completa las coordenadas de A_T, B_T y C_T para calcular el desplazamiento.');
+        return;
+      }
+      if (entered !== coordinateIds.length) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.T.valid = false;
+        setCalculationStatus(status, 'Completa las seis coordenadas destino para calcular la traslación.', true);
+        return;
+      }
+
+      const originals = [state.A, state.B, state.C];
+      if (!originals.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.T.valid = false;
+        setCalculationStatus(status, 'Primero completa los vértices originales A, B y C.', true);
+        return;
+      }
+
+      const destinations = [
+        { x: values[0], y: values[1] },
+        { x: values[2], y: values[3] },
+        { x: values[4], y: values[5] }
+      ];
+      const dx = destinations[0].x - originals[0].x;
+      const dy = destinations[0].y - originals[0].y;
+      const matchesTranslation = originals.every((point, index) =>
+        Math.abs(destinations[index].x - point.x - dx) < 1e-6 &&
+        Math.abs(destinations[index].y - point.y - dy) < 1e-6
+      );
+
+      if (!matchesTranslation) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.T.valid = false;
+        setCalculationStatus(status, 'Esas coordenadas no corresponden a una misma traslación. Revisa A_T, B_T y C_T.', true);
+        return;
+      }
+
+      state.T.dx = dx;
+      state.T.dy = dy;
+      state.T.valid = true;
+      document.getElementById('in_Tdx').value = formatCalculatedNumber(dx);
+      document.getElementById('in_Tdy').value = formatCalculatedNumber(dy);
+      setCalculationStatus(status, `Traslación calculada: dx = ${formatCalculatedNumber(dx)} y dy = ${formatCalculatedNumber(dy)}.`);
+    }
+
+    function deriveScaleAxis(sourceValues, targetValues, axisName) {
+      const distinctPair = sourceValues.findIndex((value, index) =>
+        sourceValues.slice(index + 1).some(other => Math.abs(other - value) > 1e-9)
+      );
+      let secondIndex = -1;
+      if (distinctPair !== -1) {
+        secondIndex = sourceValues.findIndex((value, index) => index > distinctPair && Math.abs(value - sourceValues[distinctPair]) > 1e-9);
+      }
+
+      if (secondIndex === -1) {
+        const sourceIsConstant = sourceValues.every(value => Math.abs(value - sourceValues[0]) < 1e-9);
+        const targetIsConstant = targetValues.every(value => Math.abs(value - targetValues[0]) < 1e-9);
+        if (sourceIsConstant && targetIsConstant && Math.abs(sourceValues[0] - targetValues[0]) < 1e-6) {
+          return { factor: 1, pivot: 0 };
+        }
+        throw new Error(`No se puede calcular S${axisName}: los vértices no permiten determinar ese factor y pivote.`);
+      }
+
+      const factor = (targetValues[secondIndex] - targetValues[distinctPair]) /
+        (sourceValues[secondIndex] - sourceValues[distinctPair]);
+      if (!Number.isFinite(factor)) {
+        throw new Error(`No se pudo calcular el factor S${axisName}.`);
+      }
+      const pivot = Math.abs(1 - factor) < 1e-9
+        ? 0
+        : (targetValues[distinctPair] - factor * sourceValues[distinctPair]) / (1 - factor);
+      const matchesScale = sourceValues.every((value, index) =>
+        Math.abs(pivot + (value - pivot) * factor - targetValues[index]) < 1e-6
+      );
+      if (!matchesScale) {
+        throw new Error(`Las coordenadas no corresponden a una escala con un único pivote en el eje ${axisName}.`);
+      }
+      return { factor, pivot };
+    }
+
+    function deriveScaleParameters() {
+      const coordinateIds = ['in_SAx', 'in_SAy', 'in_SBx', 'in_SBy', 'in_SCx', 'in_SCy'];
+      const values = coordinateIds.map(readNumericInput);
+      const outputIds = ['in_Sx', 'in_Sy', 'in_Px', 'in_Py'];
+      const status = document.getElementById('scaleStatus');
+      const entered = values.filter(value => value !== null).length;
+
+      if (entered === 0) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.S.sx = 1;
+        state.S.sy = 1;
+        state.S.px = 0;
+        state.S.py = 0;
+        state.S.valid = true;
+        setCalculationStatus(status, 'Completa las coordenadas de A_S, B_S y C_S para calcular la escala y su pivote.');
+        return;
+      }
+      if (entered !== coordinateIds.length) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.S.valid = false;
+        setCalculationStatus(status, 'Completa las seis coordenadas destino para calcular escala y pivote.', true);
+        return;
+      }
+
+      const originals = [state.A, state.B, state.C];
+      if (!originals.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.S.valid = false;
+        setCalculationStatus(status, 'Primero completa los vértices originales A, B y C.', true);
+        return;
+      }
+
+      const targetX = [values[0], values[2], values[4]];
+      const targetY = [values[1], values[3], values[5]];
+      try {
+        const scaleX = deriveScaleAxis(originals.map(point => point.x), targetX, 'x');
+        const scaleY = deriveScaleAxis(originals.map(point => point.y), targetY, 'y');
+        state.S.sx = scaleX.factor;
+        state.S.sy = scaleY.factor;
+        state.S.px = scaleX.pivot;
+        state.S.py = scaleY.pivot;
+        state.S.valid = true;
+        outputIds.forEach((id, index) => {
+          const value = [scaleX.factor, scaleY.factor, scaleX.pivot, scaleY.pivot][index];
+          document.getElementById(id).value = formatCalculatedNumber(value);
+        });
+        setCalculationStatus(status,
+          `Escala calculada: S = (${formatCalculatedNumber(scaleX.factor)}; ${formatCalculatedNumber(scaleY.factor)}), P = (${formatCalculatedNumber(scaleX.pivot)}; ${formatCalculatedNumber(scaleY.pivot)}).`
+        );
+      } catch (error) {
+        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        state.S.valid = false;
+        setCalculationStatus(status, error.message, true);
+      }
+    }
+
     function readInputs() {
       state.A.x = readNumericInput('in_Ax');
       state.A.y = readNumericInput('in_Ay');
@@ -1016,13 +1224,8 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       state.C.x = readNumericInput('in_Cx');
       state.C.y = readNumericInput('in_Cy');
 
-      state.T.dx = readNumericInput('in_Tdx') ?? 0;
-      state.T.dy = readNumericInput('in_Tdy') ?? 0;
-
-      state.S.sx = readNumericInput('in_Sx') ?? 1;
-      state.S.sy = readNumericInput('in_Sy') ?? 1;
-      state.S.px = readNumericInput('in_Px') ?? 0;
-      state.S.py = readNumericInput('in_Py') ?? 0;
+      deriveTranslationParameters();
+      deriveScaleParameters();
 
       state.R.angle = readNumericInput('in_Rangle');
       state.R.dir = document.getElementById('in_Rdir').value;
@@ -1051,9 +1254,17 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       el.addEventListener('change', readInputs);
     });
 
-    document.getElementById('btnPtoOrigin').addEventListener('click', () => {
-      document.getElementById('in_Px').value = "0";
-      document.getElementById('in_Py').value = "0";
+    document.getElementById('btnClearTranslation').addEventListener('click', () => {
+      ['in_TAx', 'in_TAy', 'in_TBx', 'in_TBy', 'in_TCx', 'in_TCy'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      readInputs();
+    });
+
+    document.getElementById('btnClearScale').addEventListener('click', () => {
+      ['in_SAx', 'in_SAy', 'in_SBx', 'in_SBy', 'in_SCx', 'in_SCy'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
       readInputs();
     });
 
@@ -1296,6 +1507,15 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
 
     // 10. INTERACCIÓN DEL PLANO (Pan & Zoom)
     canvas.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const rect = canvas.getBoundingClientRect();
+      const labelKey = findFigureLabelAt(e.clientX - rect.left, e.clientY - rect.top);
+      if (labelKey) {
+        state.view.draggingLabel = labelKey;
+        canvas.classList.add('canvas-label-dragging');
+        canvas.classList.remove('canvas-label-hover');
+        return;
+      }
       state.view.isDragging = true;
       state.view.startX = e.clientX - state.view.originX;
       state.view.startY = e.clientY - state.view.originY;
@@ -1303,6 +1523,8 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
 
     window.addEventListener('mouseup', () => {
       state.view.isDragging = false;
+      state.view.draggingLabel = '';
+      canvas.classList.remove('canvas-label-dragging');
     });
 
     canvas.addEventListener('mousemove', e => {
@@ -1310,10 +1532,34 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
 
-      if (state.view.isDragging) {
+      if (state.view.draggingLabel) {
+        const data = computeGeometry();
+        const layerPoints = {
+          orig: data?.orig,
+          t: data?.tOnly,
+          s: data?.sOnly,
+          ts: data?.tsFinal,
+          st: data?.stFinal,
+          r: data?.rotFinal
+        }[state.view.draggingLabel];
+        if (layerPoints) {
+          const centroid = {
+            x: layerPoints.reduce((total, point) => total + point.x, 0) / layerPoints.length,
+            y: layerPoints.reduce((total, point) => total + point.y, 0) / layerPoints.length
+          };
+          const math = toMath(cx, cy);
+          state.figureLabelOffsets[state.view.draggingLabel] = {
+            x: math.mx - centroid.x,
+            y: math.my - centroid.y
+          };
+          renderCanvas();
+        }
+      } else if (state.view.isDragging) {
         state.view.originX = e.clientX - state.view.startX;
         state.view.originY = e.clientY - state.view.startY;
         renderCanvas();
+      } else {
+        canvas.classList.toggle('canvas-label-hover', Boolean(findFigureLabelAt(cx, cy)));
       }
 
       const math = toMath(cx, cy);

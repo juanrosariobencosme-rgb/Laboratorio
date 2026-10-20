@@ -17,6 +17,14 @@ canvas:active {
   cursor: grabbing;
 }
 
+canvas.canvas-label-hover {
+  cursor: move;
+}
+
+canvas.canvas-label-dragging {
+  cursor: grabbing;
+}
+
 .tab-btn.active {
   border-bottom-color: #4f46e5;
   color: #4f46e5;

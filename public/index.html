@@ -122,16 +122,36 @@
             </h2>
             <span class="text-[11px] text-slate-400">Desplazamiento</span>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <label class="bg-blue-50/60 border border-blue-200 rounded-xl p-2.5">
-              <span class="block font-bold text-blue-900 font-mono mb-1">dx</span>
-              <input type="number" id="in_Tdx" step="0.5" class="w-full bg-white border border-blue-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-blue-950 focus:outline-blue-500" aria-label="Desplazamiento horizontal dx">
+          <p class="mb-2 text-[11px] text-slate-500">Escribe las coordenadas que tendrá cada vértice después de trasladarlo. Se calcularán dx y dy automáticamente.</p>
+          <div class="grid grid-cols-3 gap-2 text-[11px]">
+            <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
+              <strong class="mb-1 block text-center text-blue-900">A_T</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TAx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de A después de trasladar"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TAy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de A después de trasladar"></label>
+            </div>
+            <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
+              <strong class="mb-1 block text-center text-blue-900">B_T</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TBx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de B después de trasladar"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TBy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de B después de trasladar"></label>
+            </div>
+            <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
+              <strong class="mb-1 block text-center text-blue-900">C_T</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TCx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de C después de trasladar"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TCy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de C después de trasladar"></label>
+            </div>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+            <label class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
+              <span class="mb-1 block font-mono font-bold text-blue-900">dx calculado</span>
+              <input type="number" id="in_Tdx" readonly class="w-full rounded-lg border border-blue-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-blue-950" aria-label="Desplazamiento horizontal calculado dx">
             </label>
-            <label class="bg-blue-50/60 border border-blue-200 rounded-xl p-2.5">
-              <span class="block font-bold text-blue-900 font-mono mb-1">dy</span>
-              <input type="number" id="in_Tdy" step="0.5" class="w-full bg-white border border-blue-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-blue-950 focus:outline-blue-500" aria-label="Desplazamiento vertical dy">
+            <label class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
+              <span class="mb-1 block font-mono font-bold text-blue-900">dy calculado</span>
+              <input type="number" id="in_Tdy" readonly class="w-full rounded-lg border border-blue-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-blue-950" aria-label="Desplazamiento vertical calculado dy">
             </label>
           </div>
+          <p id="translationStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa las coordenadas de A_T, B_T y C_T para calcular el desplazamiento.</p>
+          <button id="btnClearTranslation" type="button" class="mt-1 text-[11px] font-semibold text-blue-700 hover:underline">Limpiar coordenadas de T</button>
         </div>
 
         <!-- ESCALA S Y PIVOTE P -->
@@ -142,14 +162,32 @@
             </h2>
             <span class="text-[11px] text-slate-400">Factores</span>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs mb-2">
-            <label class="bg-amber-50/60 border border-amber-200 rounded-xl p-2.5">
-              <span class="block font-bold text-amber-900 font-mono mb-1">Sx</span>
-              <input type="number" id="in_Sx" step="0.5" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-amber-950 focus:outline-amber-500" aria-label="Factor de escala Sx">
+          <p class="mb-2 text-[11px] text-slate-500">Escribe las coordenadas que tendrá cada vértice después de escalarlo. Se calcularán Sx, Sy y el pivote P.</p>
+          <div class="grid grid-cols-3 gap-2 text-[11px]">
+            <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
+              <strong class="mb-1 block text-center text-amber-900">A_S</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SAx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de A después de escalar"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SAy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de A después de escalar"></label>
+            </div>
+            <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
+              <strong class="mb-1 block text-center text-amber-900">B_S</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SBx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de B después de escalar"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SBy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de B después de escalar"></label>
+            </div>
+            <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
+              <strong class="mb-1 block text-center text-amber-900">C_S</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SCx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de C después de escalar"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SCy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de C después de escalar"></label>
+            </div>
+          </div>
+          <div class="mb-2 mt-2 grid grid-cols-2 gap-2 text-xs">
+            <label class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
+              <span class="mb-1 block font-mono font-bold text-amber-900">Sx calculado</span>
+              <input type="number" id="in_Sx" readonly class="w-full rounded-lg border border-amber-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-amber-950" aria-label="Factor de escala Sx calculado">
             </label>
-            <label class="bg-amber-50/60 border border-amber-200 rounded-xl p-2.5">
-              <span class="block font-bold text-amber-900 font-mono mb-1">Sy</span>
-              <input type="number" id="in_Sy" step="0.5" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-amber-950 focus:outline-amber-500" aria-label="Factor de escala Sy">
+            <label class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
+              <span class="mb-1 block font-mono font-bold text-amber-900">Sy calculado</span>
+              <input type="number" id="in_Sy" readonly class="w-full rounded-lg border border-amber-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-amber-950" aria-label="Factor de escala Sy calculado">
             </label>
           </div>
           
@@ -159,18 +197,20 @@
               <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
                 <i class="fa-solid fa-crosshairs text-[10px]"></i> Pivote de Escala P = (Px, Py):
               </span>
-              <button id="btnPtoOrigin" class="text-[11px] text-amber-700 font-semibold hover:underline bg-white px-2 py-0.5 rounded border border-amber-200 shadow-2xs">Fijar en (0,0)</button>
+              <span class="text-[10px] text-amber-700">Calculado desde A_S, B_S y C_S</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <label class="text-amber-800 font-mono text-[11px]">
                 <span class="block mb-1">Px</span>
-                <input type="number" id="in_Px" step="0.5" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-center font-mono text-slate-800 focus:outline-amber-500" aria-label="Coordenada horizontal del pivote de escala Px">
+                <input type="number" id="in_Px" readonly class="w-full rounded-lg border border-amber-200 bg-slate-100 px-3 py-2 text-center font-mono text-slate-800" aria-label="Coordenada horizontal calculada del pivote de escala Px">
               </label>
               <label class="text-amber-800 font-mono text-[11px]">
                 <span class="block mb-1">Py</span>
-                <input type="number" id="in_Py" step="0.5" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-center font-mono text-slate-800 focus:outline-amber-500" aria-label="Coordenada vertical del pivote de escala Py">
+                <input type="number" id="in_Py" readonly class="w-full rounded-lg border border-amber-200 bg-slate-100 px-3 py-2 text-center font-mono text-slate-800" aria-label="Coordenada vertical calculada del pivote de escala Py">
               </label>
             </div>
+            <p id="scaleStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa las coordenadas de A_S, B_S y C_S para calcular la escala y su pivote.</p>
+            <button id="btnClearScale" type="button" class="mt-1 text-[11px] font-semibold text-amber-700 hover:underline">Limpiar coordenadas de S</button>
           </div>
         </div>
 
@@ -226,10 +266,10 @@
             <select id="in_Rtarget" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-indigo-500">
               <option value="" selected>— Selecciona una figura —</option>
               <option value="orig">1. Triángulo Original</option>
-              <option value="t">2. Solo Traslación (T)</option>
-              <option value="s">3. Solo Escala (S)</option>
-              <option value="ts">4. Secuencia T → S</option>
-              <option value="st">5. Secuencia S → T</option>
+              <option value="t">2. Triángulo Solo T</option>
+              <option value="s">3. Triángulo Solo S</option>
+              <option value="ts">4. Triángulo T → S</option>
+              <option value="st">5. Triángulo S → T</option>
             </select>
           </div>
         </div>
@@ -298,6 +338,7 @@
         <div class="mt-3 border-t border-slate-100 pt-3">
           <p class="mb-2 text-[11px] text-slate-500">Personaliza el rótulo y color de cada figura. Deja el nombre vacío si no quieres que aparezca un título sobre ella.</p>
           <div class="space-y-1.5">
+            <p class="px-1 text-[10px] text-slate-500">Puedes arrastrar con el mouse el nombre de cualquier figura para cambiarlo de lugar en el plano.</p>
             <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
               <label for="figureName_orig" class="text-[11px] font-semibold text-slate-700">Original</label>
               <div class="flex justify-end"><input id="figureColor_orig" type="color" value="#0f172a" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura original"></div>

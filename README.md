@@ -17,6 +17,12 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000). `npm run dev` reinicia el servidor cuando cambia el código del servidor; vuelve a ejecutar `npm run build` después de modificar estilos o recursos.
 
+## Uso de las transformaciones
+
+- Introduce A, B y C en los vértices originales. Para definir una traslación o una escala, introduce también las coordenadas finales de A, B y C en la sección correspondiente; la aplicación calcula automáticamente dx, dy, Sx, Sy y el pivote P.
+- Para girar una figura, selecciona el triángulo original, Solo T, Solo S, T → S o S → T, e introduce el ángulo, el sentido y el pivote K.
+- Escribe un nombre para una figura y arrástralo con el mouse en el plano para ubicarlo. La posición se conserva en las exportaciones PNG y SVG.
+
 ## Comprobaciones
 
 ```bash

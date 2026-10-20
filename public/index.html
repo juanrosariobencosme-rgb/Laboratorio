@@ -120,22 +120,24 @@
             <h2 class="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
               <i class="fa-solid fa-arrows-up-down-left-right text-xs"></i> 2. Coordenadas finales T → S
             </h2>
-            <span class="text-[11px] text-slate-400">Primera secuencia</span>
+            <label class="flex items-center gap-1 text-[10px] font-semibold text-emerald-800">
+              Color <input id="figureColor_ts" type="color" value="#059669" class="h-7 w-9 cursor-pointer rounded border border-emerald-200 bg-white p-0.5" aria-label="Color del triángulo T seguido de S">
+            </label>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A_TS, B_TS y C_TS. Completa también el triángulo S → T para deducir T y S automáticamente.</p>
+          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A (T➔S), B (T➔S) y C (T➔S). Completa también el triángulo S → T para deducir T y S automáticamente.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">A_TS</strong>
+              <strong class="mb-1 block text-center text-blue-900">A (T➔S)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TAx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de A en la secuencia T seguido de S"></label>
               <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TAy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de A en la secuencia T seguido de S"></label>
             </div>
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">B_TS</strong>
+              <strong class="mb-1 block text-center text-blue-900">B (T➔S)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TBx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de B en la secuencia T seguido de S"></label>
               <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TBy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de B en la secuencia T seguido de S"></label>
             </div>
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">C_TS</strong>
+              <strong class="mb-1 block text-center text-blue-900">C (T➔S)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TCx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de C en la secuencia T seguido de S"></label>
               <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TCy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de C en la secuencia T seguido de S"></label>
             </div>
@@ -160,22 +162,24 @@
             <h2 class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
               <i class="fa-solid fa-up-right-and-down-left-from-center text-xs"></i> 3. Coordenadas finales S → T
             </h2>
-            <span class="text-[11px] text-slate-400">Factores</span>
+            <label class="flex items-center gap-1 text-[10px] font-semibold text-purple-800">
+              Color <input id="figureColor_st" type="color" value="#7c3aed" class="h-7 w-9 cursor-pointer rounded border border-purple-200 bg-white p-0.5" aria-label="Color del triángulo S seguido de T">
+            </label>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A_ST, B_ST y C_ST. Junto con T → S, la aplicación calcula Sx, Sy y el pivote P.</p>
+          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A (S➔T), B (S➔T) y C (S➔T). Junto con T → S, la aplicación calcula Sx, Sy y el pivote P.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">A_ST</strong>
+              <strong class="mb-1 block text-center text-amber-900">A (S➔T)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SAx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de A en la secuencia S seguido de T"></label>
               <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SAy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de A en la secuencia S seguido de T"></label>
             </div>
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">B_ST</strong>
+              <strong class="mb-1 block text-center text-amber-900">B (S➔T)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SBx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de B en la secuencia S seguido de T"></label>
               <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SBy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de B en la secuencia S seguido de T"></label>
             </div>
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">C_ST</strong>
+              <strong class="mb-1 block text-center text-amber-900">C (S➔T)</strong>
               <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SCx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de C en la secuencia S seguido de T"></label>
               <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SCy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de C en la secuencia S seguido de T"></label>
             </div>
@@ -354,14 +358,14 @@
               <div class="flex justify-end"><input id="figureColor_s" type="color" value="#d97706" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura Solo S"></div>
               <input id="figureName_s" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
             </div>
-            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+            <div class="grid grid-cols-[1fr_auto] items-center gap-2">
               <label for="figureName_ts" class="text-[11px] font-semibold text-slate-700">Secuencia T → S</label>
-              <div class="flex justify-end"><input id="figureColor_ts" type="color" value="#059669" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura T seguido de S"></div>
+              <span class="text-right text-[10px] text-slate-500">Color en la sección T → S</span>
               <input id="figureName_ts" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
             </div>
-            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+            <div class="grid grid-cols-[1fr_auto] items-center gap-2">
               <label for="figureName_st" class="text-[11px] font-semibold text-slate-700">Secuencia S → T</label>
-              <div class="flex justify-end"><input id="figureColor_st" type="color" value="#7c3aed" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura S seguido de T"></div>
+              <span class="text-right text-[10px] text-slate-500">Color en la sección S → T</span>
               <input id="figureName_st" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
             </div>
             <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">

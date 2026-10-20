@@ -46,11 +46,13 @@ test("sirve los estilos e iconos compilados localmente", async () => {
   const paths = [
     "/css/app.css",
     "/vendor/fontawesome/css/all.min.css",
-    "/vendor/fontawesome/webfonts/fa-solid-900.woff2"
+    "/vendor/fontawesome/webfonts/fa-solid-900.woff2",
+    "/_headers"
   ];
   const responses = await Promise.all(paths.map(path => fetch(`${baseUrl}${path}`)));
 
-  assert.deepEqual(responses.map(response => response.status), [200, 200, 200]);
+  assert.deepEqual(responses.map(response => response.status), [200, 200, 200, 200]);
+  assert.match(await responses[3].text(), /Content-Security-Policy:/);
 });
 
 test("responde 404 a rutas inexistentes", async () => {

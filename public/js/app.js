@@ -429,8 +429,7 @@
 
           ctx.fillStyle = "#0f172a";
           ctx.font = "bold 10px 'JetBrains Mono', monospace";
-          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layerKey] || '';
-          ctx.fillText(`${p.name}${suffix}(${p.x};${p.y})`, c.cx + 6, c.cy - 6);
+          ctx.fillText(`${p.name}(${p.x};${p.y})`, c.cx + 6, c.cy - 6);
         });
 
         if (name.trim()) {
@@ -871,9 +870,8 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
         out += `    <polygon points="${polyPts(layer.points)}" stroke="${layer.stroke}" stroke-width="2.2" fill="${layer.stroke}" fill-opacity="${layer.fillOpacity}" ${dashAttr} />\n`;
         layer.points.forEach(p => {
           const s = toSvg(p.x, p.y);
-          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layer.key] || '';
           out += `    <circle cx="${s.sx}" cy="${s.sy}" r="4.5" fill="${layer.stroke}" stroke="#ffffff" stroke-width="1.5" />\n`;
-          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">${p.name}${suffix}(${p.x};${p.y})</text>\n`;
+          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">${p.name}(${p.x};${p.y})</text>\n`;
         });
         if (layer.name) {
           const anchor = getFigureLabelAnchor(layer.points, layer.key);
@@ -993,7 +991,6 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
 
         for (const point of layer.points) {
           const mapped = frame.toCanvas(point.x, point.y);
-          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layer.key] || '';
           ctx.beginPath();
           ctx.arc(mapped.x, mapped.y, 4.5, 0, Math.PI * 2);
           ctx.fillStyle = layer.stroke;
@@ -1003,7 +1000,7 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
           ctx.stroke();
           ctx.fillStyle = '#0f172a';
           ctx.font = 'bold 11px monospace';
-          ctx.fillText(`${point.name}${suffix}(${point.x};${point.y})`, mapped.x + 7, mapped.y - 7);
+          ctx.fillText(`${point.name}(${point.x};${point.y})`, mapped.x + 7, mapped.y - 7);
         }
 
         if (layer.name) {

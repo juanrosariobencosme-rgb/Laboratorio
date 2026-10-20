@@ -1,21 +1,21 @@
 // ESTADO GENERAL
     const state = {
       // Puntos iniciales
-      A: { x: 2, y: 1 },
-      B: { x: 4, y: 1 },
-      C: { x: 2, y: 3 },
+      A: { x: null, y: null },
+      B: { x: null, y: null },
+      C: { x: null, y: null },
       // Parámetros
-      T: { dx: 1, dy: 2 },
-      S: { sx: 2, sy: 2, px: 0, py: 0 },
-      R: { angle: 90, dir: 'antihorario', kx: 2, ky: 2, target: 'orig' },
+      T: { dx: 0, dy: 0 },
+      S: { sx: 1, sy: 1, px: 0, py: 0 },
+      R: { angle: null, dir: '', kx: null, ky: null, target: '' },
       // Visibilidad de capas
       layers: {
         orig: true,
-        t: true,
-        s: true,
-        ts: true,
-        st: true,
-        r: true
+        t: false,
+        s: false,
+        ts: false,
+        st: false,
+        r: false
       },
       // Navegación en el plano (pan y zoom)
       view: {
@@ -27,27 +27,6 @@
         startY: 0
       }
     };
-
-    // MANDATO ESCOLAR POR DEFECTO
-    const DEFAULT_MANDATE = `Procedimiento
-1. Define tres puntos A, B y C que no queden sobre una misma línea. Dibuja los ejes, declara qué representa una unidad y registra sus coordenadas originales. Una base horizontal y un tercer punto fuera de ella facilitan comenzar.
-2. Elige un desplazamiento (dx,dy) y factores de escala. Escribe el pivote de la escala. Puedes empezar con una escala uniforme positiva; evita desplazamiento cero o factor 1 si quieres observar claramente el efecto del orden.
-3. Desde el original, calcula una traslación por separado y una escala por separado. Aplica la misma regla a A, B y C, y conserva las tres coordenadas resultantes de cada operación.
-4. Vuelve al original para cada secuencia. Calcula T→S y S→T, con los mismos valores y la misma referencia de escala. Anota resultado intermedio y final para cada vértice.
-5. Agrega una rotación e indica a qué figura la aplicas. Registra ángulo, unidad, sentido y pivote. Puedes usar un giro de 90° con las reglas del tema C03/09 y el procedimiento de pivote de C03/11.
-6. Representa los resultados en el editable. Conserva los ejes y el original, y usa etiquetas que vinculen cada figura con su tabla. Comprueba que las unidades horizontales y verticales tienen la misma longitud en el dibujo.
-7. Compara los dos órdenes y explica el efecto observado en tus coordenadas. Si coinciden, identifica qué parámetros lo explican. Revisa el editable, la tabla, la rotación, tu nombre, el código A03 y el reconocimiento de fuentes o ayuda recibida.
-
-Rotación con pivote
-Otro ejemplo independiente: gira R=(4,2) 90° antihorario alrededor de K=(2,2), con Y hacia arriba. Resta primero K: (4−2,2−2)=(2,0). Aplica (x,y)→(−y,x): resulta (0,2). Suma K: (0+2,2+2)=(2,4).
-Verifica que tanto R como R′ están a dos unidades de K. En tu tarea, escribe si la rotación se aplica al original o al resultado de una secuencia. No mezcles ambas entradas al preparar la tabla.
-
-Construir el editable
-Dibuja los ejes y marca tu triángulo original. Crea una copia para cada operación o secuencia. En Inkscape, la herramienta de selección permite mover y escalar objetos; un segundo clic muestra controles de giro y el centro. Comprueba el centro antes de girar.
-Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadrícula como referencia de tus coordenadas matemáticas. La barra de posición del editor puede usar otro origen o sentido de Y. No afirmes que sus números son los de tu plano sin comprobarlo.
-1. Pon una etiqueta completa a cada figura: original, solo T, solo S, T→S, S→T y rotación.
-2. Mantén visibles las unidades y el pivote correspondiente. Conserva objetos editables, no únicamente capturas pegadas.
-3. Abre otra vez el SVG guardado y comprueba un vértice de cada figura contra su tabla.`;
 
     // REFERENCIAS DEL DOM
     const canvas = document.getElementById('cartesianCanvas');
@@ -93,6 +72,10 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
 
     // Calcula todas las figuras
     function computeGeometry() {
+      if (![state.A.x, state.A.y, state.B.x, state.B.y, state.C.x, state.C.y].every(Number.isFinite)) {
+        return null;
+      }
+
       const orig = [
         { name: 'A', x: state.A.x, y: state.A.y },
         { name: 'B', x: state.B.x, y: state.B.y },
@@ -133,12 +116,65 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
       else if (state.R.target === 'ts') { targetPts = tsFinal; targetName = 'Secuencia T → S'; }
       else if (state.R.target === 'st') { targetPts = stFinal; targetName = 'Secuencia S → T'; }
 
-      const rotFinal = targetPts.map(p => ({
-        name: p.name,
-        ...calcR(p, state.R.angle, state.R.dir, state.R.kx, state.R.ky)
-      }));
+      const rotationEnabled = Number.isFinite(state.R.angle) &&
+        (state.R.dir === 'antihorario' || state.R.dir === 'horario') &&
+        Number.isFinite(state.R.kx) && Number.isFinite(state.R.ky) &&
+        Boolean(state.R.target);
+      const rotFinal = rotationEnabled
+        ? targetPts.map(p => ({
+          name: p.name,
+          ...calcR(p, state.R.angle, state.R.dir, state.R.kx, state.R.ky)
+        }))
+        : targetPts;
 
-      return { orig, tOnly, sOnly, tsInter, tsFinal, stInter, stFinal, rotFinal, targetPts, targetName };
+      return { orig, tOnly, sOnly, tsInter, tsFinal, stInter, stFinal, rotFinal, targetPts, targetName, rotationEnabled };
+    }
+
+    function getVisibleExportLayers(data) {
+      const layers = [];
+      if (state.layers.orig) layers.push({ key: 'orig', name: '02_Original', points: data.orig, stroke: '#0f172a', fill: 'rgba(15, 23, 42, 0.2)' });
+      if (state.layers.t) layers.push({ key: 't', name: '03_Solo_Traslacion_T', points: data.tOnly, stroke: '#2563eb', fill: 'rgba(37, 99, 235, 0.2)', dashed: true });
+      if (state.layers.s) layers.push({ key: 's', name: '04_Solo_Escala_S', points: data.sOnly, stroke: '#d97706', fill: 'rgba(217, 119, 6, 0.2)', dashed: true });
+      if (state.layers.ts) layers.push({ key: 'ts', name: '05_Secuencia_T_luego_S', points: data.tsFinal, stroke: '#059669', fill: 'rgba(5, 150, 105, 0.25)' });
+      if (state.layers.st) layers.push({ key: 'st', name: '06_Secuencia_S_luego_T', points: data.stFinal, stroke: '#7c3aed', fill: 'rgba(124, 58, 237, 0.25)' });
+      if (state.layers.r && data.rotationEnabled) layers.push({ key: 'r', name: '07_Rotacion_R', points: data.rotFinal, stroke: '#e11d48', fill: 'rgba(225, 29, 72, 0.25)' });
+      return layers;
+    }
+
+    function getQuadrantExportFrame(data, width, height) {
+      const margin = { left: 75, right: 40, top: 45, bottom: 70 };
+      const plotWidth = width - margin.left - margin.right;
+      const plotHeight = height - margin.top - margin.bottom;
+      const layers = getVisibleExportLayers(data);
+      const points = layers.flatMap(layer => layer.points);
+
+      if (state.layers.s || state.layers.ts || state.layers.st) {
+        points.push({ x: state.S.px, y: state.S.py });
+      }
+      if (state.layers.r && data.rotationEnabled) {
+        points.push({ x: state.R.kx, y: state.R.ky });
+      }
+
+      const maxX = Math.max(5, ...points.map(point => Math.max(0, point.x))) + 1;
+      const maxY = Math.max(5, ...points.map(point => Math.max(0, point.y))) + 1;
+      const scale = Math.min(plotWidth / maxX, plotHeight / maxY);
+      const originX = margin.left;
+      const originY = height - margin.bottom;
+
+      return {
+        layers,
+        margin,
+        plotWidth,
+        plotHeight,
+        originX,
+        originY,
+        scale,
+        maxX: plotWidth / scale,
+        maxY: plotHeight / scale,
+        toCanvas(x, y) {
+          return { x: originX + x * scale, y: originY - y * scale };
+        }
+      };
     }
 
     // 2. RENDERIZADO DEL PLANO CARTESIANO
@@ -283,6 +319,10 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
 
       // Dibujar Figuras
       const data = computeGeometry();
+      if (!data) {
+        ctx.restore();
+        return;
+      }
 
       function drawShape(pts, stroke, fill, label, dashed = false) {
         ctx.save();
@@ -333,7 +373,7 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
       if (state.layers.s) drawShape(data.sOnly, "#d97706", "rgba(217, 119, 6, 0.15)", "Solo S", true);
       if (state.layers.ts) drawShape(data.tsFinal, "#059669", "rgba(5, 150, 105, 0.25)", "T → S");
       if (state.layers.st) drawShape(data.stFinal, "#7c3aed", "rgba(124, 58, 237, 0.25)", "S → T");
-      if (state.layers.r) drawShape(data.rotFinal, "#e11d48", "rgba(225, 29, 72, 0.25)", `Rotación (${state.R.angle}°)`);
+      if (state.layers.r && data.rotationEnabled) drawShape(data.rotFinal, "#e11d48", "rgba(225, 29, 72, 0.25)", `Rotación (${state.R.angle}°)`);
 
       // Pivote P (Escala)
       if (state.layers.s || state.layers.ts || state.layers.st) {
@@ -351,7 +391,7 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
       }
 
       // Pivote K (Rotación)
-      if (state.layers.r) {
+      if (state.layers.r && data.rotationEnabled) {
         const ck = toCanvas(state.R.kx, state.R.ky);
         ctx.beginPath();
         ctx.arc(ck.cx, ck.cy, 6, 0, Math.PI * 2);
@@ -379,22 +419,33 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
       const data = computeGeometry();
 
       // Indicadores superiores
-      document.getElementById('labelScalePivot').textContent = `(${state.S.px};${state.S.py})`;
-      document.getElementById('labelRotPivot').textContent = `(${state.R.kx};${state.R.ky})`;
+      document.getElementById('labelScalePivot').textContent = document.getElementById('in_Sx').value || document.getElementById('in_Sy').value
+        ? `(${state.S.px};${state.S.py})` : '—';
+      document.getElementById('labelRotPivot').textContent = data?.rotationEnabled
+        ? `(${state.R.kx};${state.R.ky})` : '—';
 
       // 1. Llenar tabla de coordenadas en vivo
       coordsTableBody.innerHTML = '';
+      if (!data) {
+        manualCalculationsContainer.innerHTML = '';
+        validationCardsContainer.innerHTML = '';
+        validatorSummaryPill.textContent = 'Sin datos';
+        validatorSummaryPill.className = "text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600";
+        if (document.activeElement !== finalReportArea) finalReportArea.value = '';
+        return;
+      }
+
       data.orig.forEach((p, idx) => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
           <td class="p-3 font-bold text-slate-800 border">${p.name}</td>
           <td class="p-3 border font-semibold text-slate-900 bg-slate-50/70">(${p.x}; ${p.y})</td>
-          <td class="p-3 border font-semibold text-blue-700">(${data.tOnly[idx].x}; ${data.tOnly[idx].y})</td>
-          <td class="p-3 border font-semibold text-amber-700">(${data.sOnly[idx].x}; ${data.sOnly[idx].y})</td>
-          <td class="p-3 border font-bold text-emerald-800 bg-emerald-50/50">(${data.tsFinal[idx].x}; ${data.tsFinal[idx].y})</td>
-          <td class="p-3 border font-bold text-purple-800 bg-purple-50/50">(${data.stFinal[idx].x}; ${data.stFinal[idx].y})</td>
-          <td class="p-3 border font-bold text-rose-800 bg-rose-50/50">(${data.rotFinal[idx].x}; ${data.rotFinal[idx].y})</td>
+          <td class="p-3 border font-semibold text-blue-700">${p.name}_T (${data.tOnly[idx].x}; ${data.tOnly[idx].y})</td>
+          <td class="p-3 border font-semibold text-amber-700">${p.name}_S (${data.sOnly[idx].x}; ${data.sOnly[idx].y})</td>
+          <td class="p-3 border font-bold text-emerald-800 bg-emerald-50/50">${p.name}_TS (${data.tsFinal[idx].x}; ${data.tsFinal[idx].y})</td>
+          <td class="p-3 border font-bold text-purple-800 bg-purple-50/50">${p.name}_ST (${data.stFinal[idx].x}; ${data.stFinal[idx].y})</td>
+          <td class="p-3 border font-bold text-rose-800 bg-rose-50/50">${data.rotationEnabled ? `${p.name}_R (${data.rotFinal[idx].x}; ${data.rotFinal[idx].y})` : '—'}</td>
         `;
         coordsTableBody.appendChild(tr);
       });
@@ -528,7 +579,7 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
             </div>
           </div>
 
-          <!-- 5. Rotación con Pivote K -->
+          ${data.rotationEnabled ? `<!-- 5. Rotación con Pivote K -->
           <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-2.5 space-y-1">
             <span class="font-bold text-rose-950 block flex items-center gap-1">
               <i class="fa-solid fa-rotate text-[10px]"></i> 5) Rotación ${state.R.angle}° (${state.R.dir}) con Pivote K = (${state.R.kx}; ${state.R.ky}) sobre ${data.targetName}
@@ -540,7 +591,7 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
               <div>• Paso 3 (Volver a sumar pivote K): (${rotRelX} + ${state.R.kx}; ${rotRelY} + ${state.R.ky}) = <strong>(${rotFinX}; ${rotFinY})</strong></div>
               <div class="text-rose-800 font-bold pt-1">➜ Resultado Final: (${rotFinX}; ${rotFinY})</div>
             </div>
-          </div>
+          </div>` : ''}
         `;
         manualCalculationsContainer.appendChild(card);
       });
@@ -561,7 +612,7 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
       const isSOne = (state.S.sx === 1 && state.S.sy === 1);
 
       // Regla 4: Rotación configurada
-      const isRotValid = (!isNaN(state.R.kx) && !isNaN(state.R.ky) && state.R.angle !== 0);
+      const isRotValid = data.rotationEnabled;
 
       // Regla 5: Efecto del orden T->S vs S->T
       const dxDiff = (state.S.sx - 1) * state.T.dx;
@@ -636,8 +687,8 @@ Si eliges ubicar los puntos a partir de una cuadrícula dibujada, usa esa cuadr�
 
     // 5. INFORME OFICIAL ENTREGABLE
     function generateFinalReport(data) {
-      const student = document.getElementById('reportStudentName').value || "Estudiante";
-      const course = document.getElementById('reportCourseName').value || "Laboratorio de Transformaciones 2D - Código A03";
+      const student = document.getElementById('reportStudentName').value;
+      const course = document.getElementById('reportCourseName').value;
       const dxDiff = (state.S.sx - 1) * state.T.dx;
       const dyDiff = (state.S.sy - 1) * state.T.dy;
 
@@ -659,16 +710,16 @@ Sistema de Ejes: Ortogonal, 1 unidad por marca, Eje Y estrictamente HACIA ARRIBA
 2. PARÁMETROS CONFIGURADOS:
    • Vector de Traslación: T = (${state.T.dx}; ${state.T.dy})
    • Factores de Escala: S = (${state.S.sx}; ${state.S.sy}) respecto al pivote P = (${state.S.px}; ${state.S.py})
-   • Rotación: ${state.R.angle}° (${state.R.dir}) respecto al pivote K = (${state.R.kx}; ${state.R.ky})
-   • Figura sobre la cual se aplicó la rotación: ${data.targetName}
+   • Rotación: ${data.rotationEnabled ? `${state.R.angle}° (${state.R.dir}) respecto al pivote K = (${state.R.kx}; ${state.R.ky})` : 'Sin configurar'}
+   • Figura sobre la cual se aplicó la rotación: ${data.rotationEnabled ? data.targetName : 'Sin rotación configurada'}
 
 3. TABLA COMPARATIVA DE COORDENADAS:
 ---------------------------------------------------------------------------------------------------------
 Vértice | Original | Solo T   | Solo S   | Después de T -> S    | Después de S -> T    | Rotación R
 ---------------------------------------------------------------------------------------------------------
-A       | (${data.orig[0].x}; ${data.orig[0].y})   | (${data.tOnly[0].x}; ${data.tOnly[0].y}) | (${data.sOnly[0].x}; ${data.sOnly[0].y}) | (${data.tsFinal[0].x}; ${data.tsFinal[0].y})                | (${data.stFinal[0].x}; ${data.stFinal[0].y})                | (${data.rotFinal[0].x}; ${data.rotFinal[0].y})
-B       | (${data.orig[1].x}; ${data.orig[1].y})   | (${data.tOnly[1].x}; ${data.tOnly[1].y}) | (${data.sOnly[1].x}; ${data.sOnly[1].y}) | (${data.tsFinal[1].x}; ${data.tsFinal[1].y})               | (${data.stFinal[1].x}; ${data.stFinal[1].y})               | (${data.rotFinal[1].x}; ${data.rotFinal[1].y})
-C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data.tOnly[2].y}) | (${data.sOnly[2].x}; ${data.sOnly[2].y}) | (${data.tsFinal[2].x}; ${data.tsFinal[2].y})               | (${data.stFinal[2].x}; ${data.stFinal[2].y})               | (${data.rotFinal[2].x}; ${data.rotFinal[2].y})
+A       | (${data.orig[0].x}; ${data.orig[0].y})   | (${data.tOnly[0].x}; ${data.tOnly[0].y}) | (${data.sOnly[0].x}; ${data.sOnly[0].y}) | (${data.tsFinal[0].x}; ${data.tsFinal[0].y})                | (${data.stFinal[0].x}; ${data.stFinal[0].y})                | ${data.rotationEnabled ? `(${data.rotFinal[0].x}; ${data.rotFinal[0].y})` : '—'}
+B       | (${data.orig[1].x}; ${data.orig[1].y})   | (${data.tOnly[1].x}; ${data.tOnly[1].y}) | (${data.sOnly[1].x}; ${data.sOnly[1].y}) | (${data.tsFinal[1].x}; ${data.tsFinal[1].y})               | (${data.stFinal[1].x}; ${data.stFinal[1].y})               | ${data.rotationEnabled ? `(${data.rotFinal[1].x}; ${data.rotFinal[1].y})` : '—'}
+C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data.tOnly[2].y}) | (${data.sOnly[2].x}; ${data.sOnly[2].y}) | (${data.tsFinal[2].x}; ${data.tsFinal[2].y})               | (${data.stFinal[2].x}; ${data.stFinal[2].y})               | ${data.rotationEnabled ? `(${data.rotFinal[2].x}; ${data.rotFinal[2].y})` : '—'}
 ---------------------------------------------------------------------------------------------------------
 
 4. JUSTIFICACIÓN DEL EFECTO OBSERVADO EN EL ORDEN DE OPERADORES:
@@ -681,9 +732,11 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
 
 5. PROCEDIMIENTO DE ROTACIÓN CON PIVOTE K:
    Se siguió el procedimiento de los temas C03/09 y C03/11:
-   1) Restar el pivote K(${state.R.kx}; ${state.R.ky}) al punto.
+   ${data.rotationEnabled
+     ? `1) Restar el pivote K(${state.R.kx}; ${state.R.ky}) al punto.
    2) Aplicar la regla de rotación canónica para ${state.R.angle}° (${state.R.dir}).
-   3) Sumar nuevamente el pivote K al resultado.
+   3) Sumar nuevamente el pivote K al resultado.`
+     : 'No se aplicó ninguna rotación.'}
 
 6. COMPROBACIÓN DE REQUISITOS Y AYUDA RECIBIDA:
    - Cumplimiento de consignas del mandato A03 verificado al 100%.
@@ -698,18 +751,17 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
     // 6. EXPORTACIONES (SVG E IMAGEN PNG)
     function exportInkscapeSVG() {
       const data = computeGeometry();
-      const svgW = 1100;
-      const svgH = 850;
-      const scale = 32;
-      const ox = 260;
-      const oy = 640;
-
-      function toSvg(x, y) {
-        return {
-          sx: (ox + x * scale).toFixed(2),
-          sy: (oy - y * scale).toFixed(2)
-        };
+      if (!data) {
+        window.alert('Completa las coordenadas de A, B y C antes de exportar el SVG.');
+        return;
       }
+      const svgW = 1200;
+      const svgH = 900;
+      const frame = getQuadrantExportFrame(data, svgW, svgH);
+      const toSvg = (x, y) => {
+        const point = frame.toCanvas(x, y);
+        return { sx: point.x.toFixed(2), sy: point.y.toFixed(2) };
+      };
 
       function polyPts(arr) {
         return arr.map(p => {
@@ -718,70 +770,75 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
         }).join(' ');
       }
 
+      const gridStep = Math.max(1, Math.ceil(Math.max(frame.maxX, frame.maxY) / 40));
       let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
   <style>
     .grid { stroke: #e2e8f0; stroke-width: 1; }
     .axis { stroke: #0f172a; stroke-width: 2.5; }
-    .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #334155; }
-    .vtext { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: bold; fill: #0f172a; }
+    .label { font-family: sans-serif; font-size: 12px; fill: #334155; }
+    .vtext { font-family: monospace; font-size: 11px; font-weight: bold; fill: #0f172a; }
   </style>
-
-  <!-- CAPA 1: CUADRÍCULA Y EJES -->
-  <g inkscape:groupmode="layer" inkscape:label="01_Cuadricula_y_Ejes" id="capa_ejes">
-    <rect width="${svgW}" height="${svgH}" fill="#ffffff"/>
+  <defs>
+    <clipPath id="primer-cuadrante">
+      <rect x="${frame.originX}" y="${frame.margin.top}" width="${frame.plotWidth}" height="${frame.plotHeight}"/>
+    </clipPath>
+  </defs>
+  <rect width="${svgW}" height="${svgH}" fill="#ffffff"/>
+  <text x="${frame.originX}" y="28" class="label" font-weight="bold">Plano cartesiano — primer cuadrante</text>
+  <g inkscape:groupmode="layer" inkscape:label="01_Cuadricula_y_Ejes" id="capa_ejes" clip-path="url(#primer-cuadrante)">
 `;
 
-      for (let x = -5; x <= 25; x++) {
-        const p1 = toSvg(x, -5);
-        const p2 = toSvg(x, 22);
-        svg += `    <line x1="${p1.sx}" y1="${p1.sy}" x2="${p2.sx}" y2="${p2.sy}" class="grid" />\n`;
+      for (let x = 0; x <= frame.maxX; x += gridStep) {
+        const p1 = toSvg(x, 0);
+        const p2 = toSvg(x, frame.maxY);
+        svg += `    <line x1="${p1.sx}" y1="${p2.sy}" x2="${p1.sx}" y2="${p1.sy}" class="grid" />\n`;
+        svg += `    <text x="${parseFloat(p1.sx) + 4}" y="${frame.originY - 8}" class="label">${x}</text>\n`;
       }
-      for (let y = -5; y <= 22; y++) {
-        const p1 = toSvg(-5, y);
-        const p2 = toSvg(25, y);
-        svg += `    <line x1="${p1.sx}" y1="${p1.sy}" x2="${p2.sx}" y2="${p2.sy}" class="grid" />\n`;
+      for (let y = 0; y <= frame.maxY; y += gridStep) {
+        const p1 = toSvg(0, y);
+        const p2 = toSvg(frame.maxX, y);
+        svg += `    <line x1="${p1.sx}" y1="${p1.sy}" x2="${p2.sx}" y2="${p1.sy}" class="grid" />\n`;
+        if (y > 0) svg += `    <text x="${frame.originX + 5}" y="${parseFloat(p1.sy) - 5}" class="label">${y}</text>\n`;
       }
 
-      const ex1 = toSvg(-5, 0);
-      const ex2 = toSvg(25, 0);
-      const ey1 = toSvg(0, -5);
-      const ey2 = toSvg(0, 22);
-
-      svg += `    <line x1="${ex1.sx}" y1="${ex1.sy}" x2="${ex2.sx}" y2="${ex2.sy}" class="axis" />\n`;
-      svg += `    <line x1="${ey1.sx}" y1="${ey1.sy}" x2="${ey2.sx}" y2="${ey2.sy}" class="axis" />\n`;
-      svg += `    <text x="${parseFloat(ex2.sx) - 30}" y="${parseFloat(ex2.sy) - 8}" class="label" font-weight="bold">+X</text>\n`;
-      svg += `    <text x="${parseFloat(ey2.sx) + 8}" y="${parseFloat(ey2.sy) + 18}" class="label" font-weight="bold">+Y (Arriba)</text>\n`;
-      svg += `    <text x="${ox + 6}" y="${oy + 16}" class="label">O(0,0)</text>\n`;
+      const origin = toSvg(0, 0);
+      const xEnd = toSvg(frame.maxX, 0);
+      const yEnd = toSvg(0, frame.maxY);
+      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${xEnd.sx}" y2="${xEnd.sy}" class="axis" />\n`;
+      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${yEnd.sx}" y2="${yEnd.sy}" class="axis" />\n`;
+      svg += `    <text x="${parseFloat(xEnd.sx) - 30}" y="${parseFloat(xEnd.sy) - 10}" class="label" font-weight="bold">+X</text>\n`;
+      svg += `    <text x="${parseFloat(yEnd.sx) + 8}" y="${parseFloat(yEnd.sy) + 16}" class="label" font-weight="bold">+Y</text>\n`;
+      svg += `    <text x="${parseFloat(origin.sx) + 6}" y="${parseFloat(origin.sy) - 8}" class="label">O(0,0)</text>\n`;
       svg += `  </g>\n`;
 
-      function appendSvgLayer(name, pts, stroke, fill, dashed = false) {
-        const dashAttr = dashed ? 'stroke-dasharray="4,4"' : '';
-        let out = `  <!-- CAPA: ${name} -->\n  <g inkscape:groupmode="layer" inkscape:label="${name}">\n`;
-        out += `    <polygon points="${polyPts(pts)}" stroke="${stroke}" stroke-width="2.2" fill="${fill}" ${dashAttr} />\n`;
-        pts.forEach(p => {
+      function appendSvgLayer(layer) {
+        const dashAttr = layer.dashed ? 'stroke-dasharray="5,4"' : '';
+        let out = `  <g inkscape:groupmode="layer" inkscape:label="${layer.name}" clip-path="url(#primer-cuadrante)">\n`;
+        out += `    <polygon points="${polyPts(layer.points)}" stroke="${layer.stroke}" stroke-width="2.2" fill="${layer.fill}" ${dashAttr} />\n`;
+        layer.points.forEach(p => {
           const s = toSvg(p.x, p.y);
-          out += `    <circle cx="${s.sx}" cy="${s.sy}" r="4.5" fill="${stroke}" stroke="#ffffff" stroke-width="1.5" />\n`;
-          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" class="vtext">${p.name}(${p.x};${p.y})</text>\n`;
+          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layer.key] || '';
+          out += `    <circle cx="${s.sx}" cy="${s.sy}" r="4.5" fill="${layer.stroke}" stroke="#ffffff" stroke-width="1.5" />\n`;
+          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" class="vtext">${p.name}${suffix}(${p.x};${p.y})</text>\n`;
         });
         out += `  </g>\n`;
         return out;
       }
 
-      svg += appendSvgLayer("02_Original", data.orig, "#0f172a", "rgba(15, 23, 42, 0.2)");
-      svg += appendSvgLayer("03_Solo_Traslacion_T", data.tOnly, "#2563eb", "rgba(37, 99, 235, 0.2)", true);
-      svg += appendSvgLayer("04_Solo_Escala_S", data.sOnly, "#d97706", "rgba(217, 119, 6, 0.2)", true);
-      svg += appendSvgLayer("05_Secuencia_T_luego_S", data.tsFinal, "#059669", "rgba(5, 150, 105, 0.25)");
-      svg += appendSvgLayer("06_Secuencia_S_luego_T", data.stFinal, "#7c3aed", "rgba(124, 58, 237, 0.25)");
-      svg += appendSvgLayer("07_Rotacion_R", data.rotFinal, "#e11d48", "rgba(225, 29, 72, 0.25)");
+      for (const layer of frame.layers) svg += appendSvgLayer(layer);
 
-      const spP = toSvg(state.S.px, state.S.py);
-      const spK = toSvg(state.R.kx, state.R.ky);
-      svg += `  <!-- CAPA: Pivotes -->\n  <g inkscape:groupmode="layer" inkscape:label="08_Pivotes">\n`;
-      svg += `    <circle cx="${spP.sx}" cy="${spP.sy}" r="5" fill="#fef3c7" stroke="#b45309" stroke-width="2" />\n`;
-      svg += `    <text x="${parseFloat(spP.sx) + 8}" y="${parseFloat(spP.sy) + 4}" class="vtext" fill="#b45309">P(${state.S.px};${state.S.py})</text>\n`;
-      svg += `    <circle cx="${spK.sx}" cy="${spK.sy}" r="6" fill="#ffe4e6" stroke="#be123c" stroke-width="2" />\n`;
-      svg += `    <text x="${parseFloat(spK.sx) + 8}" y="${parseFloat(spK.sy) - 6}" class="vtext" fill="#be123c">K(${state.R.kx};${state.R.ky})</text>\n`;
+      svg += `  <g inkscape:groupmode="layer" inkscape:label="08_Pivotes" clip-path="url(#primer-cuadrante)">\n`;
+      if (state.layers.s || state.layers.ts || state.layers.st) {
+        const spP = toSvg(state.S.px, state.S.py);
+        svg += `    <circle cx="${spP.sx}" cy="${spP.sy}" r="5" fill="#fef3c7" stroke="#b45309" stroke-width="2" />\n`;
+        svg += `    <text x="${parseFloat(spP.sx) + 8}" y="${parseFloat(spP.sy) + 4}" class="vtext" fill="#b45309">P(${state.S.px};${state.S.py})</text>\n`;
+      }
+      if (data.rotationEnabled) {
+        const spK = toSvg(state.R.kx, state.R.ky);
+        svg += `    <circle cx="${spK.sx}" cy="${spK.sy}" r="6" fill="#ffe4e6" stroke="#be123c" stroke-width="2" />\n`;
+        svg += `    <text x="${parseFloat(spK.sx) + 8}" y="${parseFloat(spK.sy) - 6}" class="vtext" fill="#be123c">K(${state.R.kx};${state.R.ky})</text>\n`;
+      }
       svg += `  </g>\n</svg>`;
 
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
@@ -792,11 +849,140 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function exportPNG() {
-      const url = canvas.toDataURL("image/png");
+      const data = computeGeometry();
+      if (!data) {
+        window.alert('Completa las coordenadas de A, B y C antes de exportar la imagen.');
+        return;
+      }
+
+      const output = document.createElement('canvas');
+      output.width = 1200;
+      output.height = 900;
+      const ctx = output.getContext('2d');
+      const frame = getQuadrantExportFrame(data, output.width, output.height);
+      const gridStep = Math.max(1, Math.ceil(Math.max(frame.maxX, frame.maxY) / 40));
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, output.width, output.height);
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('Plano cartesiano — primer cuadrante', frame.originX, 28);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(frame.originX, frame.margin.top, frame.plotWidth, frame.plotHeight);
+      ctx.clip();
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.fillStyle = '#64748b';
+      ctx.lineWidth = 1;
+      ctx.font = '11px monospace';
+      for (let x = 0; x <= frame.maxX; x += gridStep) {
+        const point = frame.toCanvas(x, 0);
+        ctx.beginPath();
+        ctx.moveTo(point.x, frame.originY);
+        ctx.lineTo(point.x, frame.margin.top);
+        ctx.stroke();
+        ctx.fillText(String(x), point.x + 4, frame.originY - 8);
+      }
+      for (let y = 0; y <= frame.maxY; y += gridStep) {
+        const point = frame.toCanvas(0, y);
+        ctx.beginPath();
+        ctx.moveTo(frame.originX, point.y);
+        ctx.lineTo(frame.originX + frame.plotWidth, point.y);
+        ctx.stroke();
+        if (y > 0) ctx.fillText(String(y), frame.originX + 5, point.y - 5);
+      }
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.fillStyle = '#0f172a';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(frame.originX, frame.originY);
+      ctx.lineTo(frame.originX + frame.plotWidth, frame.originY);
+      ctx.moveTo(frame.originX, frame.originY);
+      ctx.lineTo(frame.originX, frame.margin.top);
+      ctx.stroke();
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('+X', frame.originX + frame.plotWidth - 28, frame.originY - 10);
+      ctx.fillText('+Y', frame.originX + 8, frame.margin.top + 14);
+      ctx.fillText('O(0,0)', frame.originX + 6, frame.originY - 8);
+
+      for (const layer of frame.layers) {
+        ctx.save();
+        ctx.strokeStyle = layer.stroke;
+        ctx.fillStyle = layer.fill;
+        ctx.lineWidth = 2.2;
+        if (layer.dashed) ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        layer.points.forEach((point, index) => {
+          const mapped = frame.toCanvas(point.x, point.y);
+          if (index === 0) ctx.moveTo(mapped.x, mapped.y);
+          else ctx.lineTo(mapped.x, mapped.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        for (const point of layer.points) {
+          const mapped = frame.toCanvas(point.x, point.y);
+          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layer.key] || '';
+          ctx.beginPath();
+          ctx.arc(mapped.x, mapped.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = layer.stroke;
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`${point.name}${suffix}(${point.x};${point.y})`, mapped.x + 7, mapped.y - 7);
+        }
+
+        const centerX = layer.points.reduce((total, point) => total + point.x, 0) / layer.points.length;
+        const centerY = layer.points.reduce((total, point) => total + point.y, 0) / layer.points.length;
+        const center = frame.toCanvas(centerX, centerY);
+        const label = {
+          orig: 'Original',
+          t: 'Solo T',
+          s: 'Solo S',
+          ts: 'T → S',
+          st: 'S → T',
+          r: `Rotación (${state.R.angle}°)`
+        }[layer.key];
+        ctx.fillStyle = layer.stroke;
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(label, center.x - 20, center.y);
+        ctx.restore();
+      }
+
+      function drawPivot(x, y, label, fill, stroke) {
+        const point = frame.toCanvas(x, y);
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = stroke;
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`${label}(${x};${y})`, point.x + 8, point.y - 6);
+      }
+
+      if (state.layers.s || state.layers.ts || state.layers.st) {
+        drawPivot(state.S.px, state.S.py, 'P', '#fef3c7', '#b45309');
+      }
+      if (state.layers.r && data.rotationEnabled) {
+        drawPivot(state.R.kx, state.R.ky, 'K', '#ffe4e6', '#be123c');
+      }
+      ctx.restore();
+
+      const url = output.toDataURL('image/png');
       const a = document.createElement("a");
       a.href = url;
       a.download = `Plano_Transformaciones_A03.png`;
@@ -806,26 +992,33 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
     }
 
     // 7. LECTURA DE VALORES DE ENTRADA
+    function readNumericInput(id) {
+      const value = document.getElementById(id).value.trim();
+      if (value === '') return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
     function readInputs() {
-      state.A.x = parseFloat(document.getElementById('in_Ax').value) || 0;
-      state.A.y = parseFloat(document.getElementById('in_Ay').value) || 0;
-      state.B.x = parseFloat(document.getElementById('in_Bx').value) || 0;
-      state.B.y = parseFloat(document.getElementById('in_By').value) || 0;
-      state.C.x = parseFloat(document.getElementById('in_Cx').value) || 0;
-      state.C.y = parseFloat(document.getElementById('in_Cy').value) || 0;
+      state.A.x = readNumericInput('in_Ax');
+      state.A.y = readNumericInput('in_Ay');
+      state.B.x = readNumericInput('in_Bx');
+      state.B.y = readNumericInput('in_By');
+      state.C.x = readNumericInput('in_Cx');
+      state.C.y = readNumericInput('in_Cy');
 
-      state.T.dx = parseFloat(document.getElementById('in_Tdx').value) || 0;
-      state.T.dy = parseFloat(document.getElementById('in_Tdy').value) || 0;
+      state.T.dx = readNumericInput('in_Tdx') ?? 0;
+      state.T.dy = readNumericInput('in_Tdy') ?? 0;
 
-      state.S.sx = parseFloat(document.getElementById('in_Sx').value) || 1;
-      state.S.sy = parseFloat(document.getElementById('in_Sy').value) || 1;
-      state.S.px = parseFloat(document.getElementById('in_Px').value) || 0;
-      state.S.py = parseFloat(document.getElementById('in_Py').value) || 0;
+      state.S.sx = readNumericInput('in_Sx') ?? 1;
+      state.S.sy = readNumericInput('in_Sy') ?? 1;
+      state.S.px = readNumericInput('in_Px') ?? 0;
+      state.S.py = readNumericInput('in_Py') ?? 0;
 
-      state.R.angle = parseFloat(document.getElementById('in_Rangle').value) || 90;
+      state.R.angle = readNumericInput('in_Rangle');
       state.R.dir = document.getElementById('in_Rdir').value;
-      state.R.kx = parseFloat(document.getElementById('in_Kx').value) || 0;
-      state.R.ky = parseFloat(document.getElementById('in_Ky').value) || 0;
+      state.R.kx = readNumericInput('in_Kx');
+      state.R.ky = readNumericInput('in_Ky');
       state.R.target = document.getElementById('in_Rtarget').value;
 
       state.layers.orig = document.getElementById('layer_orig').checked;
@@ -881,12 +1074,16 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
     // Pegar cálculos actuales a la pizarra
     document.getElementById('btnInsertCalculationsToBoard').addEventListener('click', () => {
       const data = computeGeometry();
+      if (!data) {
+        window.alert('Completa las coordenadas de A, B y C antes de insertar cálculos.');
+        return;
+      }
       const timestamp = new Date().toLocaleTimeString();
       let log = `\n--- REGISTRO DE MEDIDAS Y CÁLCULOS [${timestamp}] ---\n`;
       log += `• Original: A(${state.A.x},${state.A.y}), B(${state.B.x},${state.B.y}), C(${state.C.x},${state.C.y})\n`;
       log += `• Traslación: T=(${state.T.dx},${state.T.dy})\n`;
       log += `• Escala: S=(${state.S.sx},${state.S.sy}) | Pivote P=(${state.S.px},${state.S.py})\n`;
-      log += `• Rotación: ${state.R.angle}° (${state.R.dir}) | Pivote K=(${state.R.kx},${state.R.ky})\n`;
+      log += `• Rotación: ${data.rotationEnabled ? `${state.R.angle}° (${state.R.dir}) | Pivote K=(${state.R.kx},${state.R.ky})` : 'Sin configurar'}\n`;
       log += `RESULTADOS:\n`;
       data.orig.forEach((p, i) => {
         log += `  - ${p.name}: T->(${data.tOnly[i].x},${data.tOnly[i].y}) | S->(${data.sOnly[i].x},${data.sOnly[i].y}) | T->S->(${data.tsFinal[i].x},${data.tsFinal[i].y}) | S->T->(${data.stFinal[i].x},${data.stFinal[i].y}) | R->(${data.rotFinal[i].x},${data.rotFinal[i].y})\n`;
@@ -901,9 +1098,8 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
     });
 
     // Mandato: Guardar y resetear
-    mandateTextArea.value = DEFAULT_MANDATE;
     document.getElementById('btnResetDefaultMandate').addEventListener('click', () => {
-      mandateTextArea.value = DEFAULT_MANDATE;
+      mandateTextArea.value = '';
     });
 
     // Copiar informe final
@@ -1026,4 +1222,3 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       state.view.originY = rect.height - 90;
       readInputs();
     };
-

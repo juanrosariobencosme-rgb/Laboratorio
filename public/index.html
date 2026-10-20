@@ -108,36 +108,36 @@
             </div>
           </div>
         </div>
-        <p class="mt-2 text-[11px] text-slate-500">Ingresa aquí los vértices originales A, B y C. La aplicación calcula automáticamente sus coordenadas para Solo T, Solo S y las secuencias T → S y S → T, conservando el nombre de cada vértice.</p>
+        <p class="mt-2 text-[11px] text-slate-500">Ingresa los vértices originales A, B y C. Después puedes escribir los triángulos finales T → S y S → T; la aplicación deduce automáticamente los parámetros T y S.</p>
       </div>
 
       <!-- 2. TRASLACIÓN Y ESCALA -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3.5">
         
-        <!-- TRASLACIÓN T -->
+        <!-- COORDENADAS FINALES T -> S Y TRASLACIÓN -->
         <div>
           <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
             <h2 class="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-arrows-up-down-left-right text-xs"></i> 2. Traslación T = (dx, dy)
+              <i class="fa-solid fa-arrows-up-down-left-right text-xs"></i> 2. Coordenadas finales T → S
             </h2>
-            <span class="text-[11px] text-slate-400">Desplazamiento</span>
+            <span class="text-[11px] text-slate-400">Primera secuencia</span>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Escribe las coordenadas que tendrá cada vértice después de trasladarlo. Se calcularán dx y dy automáticamente.</p>
+          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A_TS, B_TS y C_TS. Completa también el triángulo S → T para deducir T y S automáticamente.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">A_T</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TAx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de A después de trasladar"></label>
-              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TAy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de A después de trasladar"></label>
+              <strong class="mb-1 block text-center text-blue-900">A_TS</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TAx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de A en la secuencia T seguido de S"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TAy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de A en la secuencia T seguido de S"></label>
             </div>
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">B_T</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TBx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de B después de trasladar"></label>
-              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TBy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de B después de trasladar"></label>
+              <strong class="mb-1 block text-center text-blue-900">B_TS</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TBx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de B en la secuencia T seguido de S"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TBy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de B en la secuencia T seguido de S"></label>
             </div>
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
-              <strong class="mb-1 block text-center text-blue-900">C_T</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TCx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de C después de trasladar"></label>
-              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TCy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de C después de trasladar"></label>
+              <strong class="mb-1 block text-center text-blue-900">C_TS</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-blue-800">x <input type="number" id="in_TCx" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de C en la secuencia T seguido de S"></label>
+              <label class="flex items-center justify-between gap-1 text-blue-800">y <input type="number" id="in_TCy" step="0.5" class="w-14 rounded border border-blue-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de C en la secuencia T seguido de S"></label>
             </div>
           </div>
           <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
@@ -150,34 +150,34 @@
               <input type="number" id="in_Tdy" readonly class="w-full rounded-lg border border-blue-300 bg-slate-100 px-3 py-2 text-center font-mono font-bold text-blue-950" aria-label="Desplazamiento vertical calculado dy">
             </label>
           </div>
-          <p id="translationStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa las coordenadas de A_T, B_T y C_T para calcular el desplazamiento.</p>
-          <button id="btnClearTranslation" type="button" class="mt-1 text-[11px] font-semibold text-blue-700 hover:underline">Limpiar coordenadas de T</button>
+          <p id="translationStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa ambos triángulos finales T → S y S → T para calcular dx y dy.</p>
+          <button id="btnClearTranslation" type="button" class="mt-1 text-[11px] font-semibold text-blue-700 hover:underline">Limpiar coordenadas T → S</button>
         </div>
 
-        <!-- ESCALA S Y PIVOTE P -->
+        <!-- COORDENADAS FINALES S -> T Y ESCALA -->
         <div>
           <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
             <h2 class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-up-right-and-down-left-from-center text-xs"></i> 3. Escala S y Pivote P
+              <i class="fa-solid fa-up-right-and-down-left-from-center text-xs"></i> 3. Coordenadas finales S → T
             </h2>
             <span class="text-[11px] text-slate-400">Factores</span>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Escribe las coordenadas que tendrá cada vértice después de escalarlo. Se calcularán Sx, Sy y el pivote P.</p>
+          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A_ST, B_ST y C_ST. Junto con T → S, la aplicación calcula Sx, Sy y el pivote P.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">A_S</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SAx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de A después de escalar"></label>
-              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SAy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de A después de escalar"></label>
+              <strong class="mb-1 block text-center text-amber-900">A_ST</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SAx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de A en la secuencia S seguido de T"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SAy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de A en la secuencia S seguido de T"></label>
             </div>
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">B_S</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SBx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de B después de escalar"></label>
-              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SBy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de B después de escalar"></label>
+              <strong class="mb-1 block text-center text-amber-900">B_ST</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SBx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de B en la secuencia S seguido de T"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SBy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de B en la secuencia S seguido de T"></label>
             </div>
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
-              <strong class="mb-1 block text-center text-amber-900">C_S</strong>
-              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SCx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x de C después de escalar"></label>
-              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SCy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y de C después de escalar"></label>
+              <strong class="mb-1 block text-center text-amber-900">C_ST</strong>
+              <label class="mb-1 flex items-center justify-between gap-1 text-amber-800">x <input type="number" id="in_SCx" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada x final de C en la secuencia S seguido de T"></label>
+              <label class="flex items-center justify-between gap-1 text-amber-800">y <input type="number" id="in_SCy" step="0.5" class="w-14 rounded border border-amber-300 bg-white px-1 py-1 text-center font-mono text-slate-800" aria-label="Coordenada y final de C en la secuencia S seguido de T"></label>
             </div>
           </div>
           <div class="mb-2 mt-2 grid grid-cols-2 gap-2 text-xs">
@@ -197,7 +197,7 @@
               <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
                 <i class="fa-solid fa-crosshairs text-[10px]"></i> Pivote de Escala P = (Px, Py):
               </span>
-              <span class="text-[10px] text-amber-700">Calculado desde A_S, B_S y C_S</span>
+              <span class="text-[10px] text-amber-700">Calculado con T → S y S → T</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <label class="text-amber-800 font-mono text-[11px]">
@@ -209,8 +209,8 @@
                 <input type="number" id="in_Py" readonly class="w-full rounded-lg border border-amber-200 bg-slate-100 px-3 py-2 text-center font-mono text-slate-800" aria-label="Coordenada vertical calculada del pivote de escala Py">
               </label>
             </div>
-            <p id="scaleStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa las coordenadas de A_S, B_S y C_S para calcular la escala y su pivote.</p>
-            <button id="btnClearScale" type="button" class="mt-1 text-[11px] font-semibold text-amber-700 hover:underline">Limpiar coordenadas de S</button>
+            <p id="scaleStatus" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite">Completa ambos triángulos finales para calcular Sx, Sy y el pivote P.</p>
+            <button id="btnClearScale" type="button" class="mt-1 text-[11px] font-semibold text-amber-700 hover:underline">Limpiar coordenadas S → T</button>
           </div>
         </div>
 

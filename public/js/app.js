@@ -1068,151 +1068,157 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       return String(Object.is(rounded, -0) ? 0 : rounded);
     }
 
-    function deriveTranslationParameters() {
-      const coordinateIds = ['in_TAx', 'in_TAy', 'in_TBx', 'in_TBy', 'in_TCx', 'in_TCy'];
-      const values = coordinateIds.map(readNumericInput);
-      const outputIds = ['in_Tdx', 'in_Tdy'];
-      const status = document.getElementById('translationStatus');
-      const entered = values.filter(value => value !== null).length;
+    function readDestinationTriangle(prefix) {
+      const suffixes = ['Ax', 'Ay', 'Bx', 'By', 'Cx', 'Cy'];
+      const values = suffixes.map(suffix => readNumericInput(`in_${prefix}${suffix}`));
+      return {
+        entered: values.filter(value => value !== null).length,
+        points: [
+          { x: values[0], y: values[1] },
+          { x: values[2], y: values[3] },
+          { x: values[4], y: values[5] }
+        ]
+      };
+    }
 
-      if (entered === 0) {
+    function inferScaleAndTranslationAxis(originals, tsPoints, stPoints, axis) {
+      const source = originals.map(point => point[axis]);
+      const ts = tsPoints.map(point => point[axis]);
+      const st = stPoints.map(point => point[axis]);
+      const tolerance = 1e-6;
+      let factor = null;
+
+      for (let first = 0; first < source.length; first++) {
+        for (let second = first + 1; second < source.length; second++) {
+          const difference = source[second] - source[first];
+          if (Math.abs(difference) < tolerance) continue;
+          const candidate = (st[second] - st[first]) / difference;
+          if (factor === null) factor = candidate;
+          else if (Math.abs(candidate - factor) > tolerance) {
+            throw new Error(`Los vértices S → T no corresponden a una misma escala en el eje ${axis}.`);
+          }
+        }
+      }
+      if (factor === null || !Number.isFinite(factor)) {
+        throw new Error(`No se puede deducir S${axis}: los vértices originales no varían en ese eje.`);
+      }
+
+      for (let index = 0; index < source.length; index++) {
+        for (let other = index + 1; other < source.length; other++) {
+          const expectedDifference = factor * (source[other] - source[index]);
+          if (Math.abs((ts[other] - ts[index]) - expectedDifference) > tolerance) {
+            throw new Error(`Los vértices T → S y S → T no corresponden a la misma escala en el eje ${axis}.`);
+          }
+        }
+      }
+
+      const orderDifferences = ts.map((value, index) => value - st[index]);
+      if (orderDifferences.some(value => Math.abs(value - orderDifferences[0]) > tolerance)) {
+        throw new Error(`Las coordenadas T → S y S → T deben diferir por el mismo vector en el eje ${axis}.`);
+      }
+
+      if (Math.abs(factor - 1) < tolerance) {
+        if (Math.abs(orderDifferences[0]) > tolerance) {
+          throw new Error(`No se puede deducir d${axis}: cuando S${axis}=1, las secuencias T → S y S → T deben coincidir.`);
+        }
+        const shifts = st.map((value, index) => value - source[index]);
+        if (shifts.some(value => Math.abs(value - shifts[0]) > tolerance)) {
+          throw new Error(`Los vértices S → T no corresponden a una traslación uniforme en el eje ${axis}.`);
+        }
+        return { factor: 1, pivot: 0, displacement: shifts[0] };
+      }
+
+      const displacement = orderDifferences[0] / (factor - 1);
+      const pivot = (st[0] - factor * source[0] - displacement) / (1 - factor);
+      const matchesBothOrders = source.every((value, index) => {
+        const scaleThenTranslate = pivot + factor * (value - pivot) + displacement;
+        const translateThenScale = pivot + factor * (value + displacement - pivot);
+        return Math.abs(st[index] - scaleThenTranslate) <= tolerance &&
+          Math.abs(ts[index] - translateThenScale) <= tolerance;
+      });
+      if (!matchesBothOrders) {
+        throw new Error(`Las coordenadas no representan las secuencias T → S y S → T con un único pivote en el eje ${axis}.`);
+      }
+      return { factor, pivot, displacement };
+    }
+
+    function deriveTransformParameters() {
+      const tsTriangle = readDestinationTriangle('T');
+      const stTriangle = readDestinationTriangle('S');
+      const translationStatus = document.getElementById('translationStatus');
+      const scaleStatus = document.getElementById('scaleStatus');
+      const outputIds = ['in_Tdx', 'in_Tdy', 'in_Sx', 'in_Sy', 'in_Px', 'in_Py'];
+      const entered = tsTriangle.entered + stTriangle.entered;
+      const resetDefaults = () => {
         outputIds.forEach(id => { document.getElementById(id).value = ''; });
         state.T.dx = 0;
         state.T.dy = 0;
-        state.T.valid = true;
-        setCalculationStatus(status, 'Completa las coordenadas de A_T, B_T y C_T para calcular el desplazamiento.');
-        return;
-      }
-      if (entered !== coordinateIds.length) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
-        state.T.valid = false;
-        setCalculationStatus(status, 'Completa las seis coordenadas destino para calcular la traslación.', true);
-        return;
-      }
-
-      const originals = [state.A, state.B, state.C];
-      if (!originals.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
-        state.T.valid = false;
-        setCalculationStatus(status, 'Primero completa los vértices originales A, B y C.', true);
-        return;
-      }
-
-      const destinations = [
-        { x: values[0], y: values[1] },
-        { x: values[2], y: values[3] },
-        { x: values[4], y: values[5] }
-      ];
-      const dx = destinations[0].x - originals[0].x;
-      const dy = destinations[0].y - originals[0].y;
-      const matchesTranslation = originals.every((point, index) =>
-        Math.abs(destinations[index].x - point.x - dx) < 1e-6 &&
-        Math.abs(destinations[index].y - point.y - dy) < 1e-6
-      );
-
-      if (!matchesTranslation) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
-        state.T.valid = false;
-        setCalculationStatus(status, 'Esas coordenadas no corresponden a una misma traslación. Revisa A_T, B_T y C_T.', true);
-        return;
-      }
-
-      state.T.dx = dx;
-      state.T.dy = dy;
-      state.T.valid = true;
-      document.getElementById('in_Tdx').value = formatCalculatedNumber(dx);
-      document.getElementById('in_Tdy').value = formatCalculatedNumber(dy);
-      setCalculationStatus(status, `Traslación calculada: dx = ${formatCalculatedNumber(dx)} y dy = ${formatCalculatedNumber(dy)}.`);
-    }
-
-    function deriveScaleAxis(sourceValues, targetValues, axisName) {
-      const distinctPair = sourceValues.findIndex((value, index) =>
-        sourceValues.slice(index + 1).some(other => Math.abs(other - value) > 1e-9)
-      );
-      let secondIndex = -1;
-      if (distinctPair !== -1) {
-        secondIndex = sourceValues.findIndex((value, index) => index > distinctPair && Math.abs(value - sourceValues[distinctPair]) > 1e-9);
-      }
-
-      if (secondIndex === -1) {
-        const sourceIsConstant = sourceValues.every(value => Math.abs(value - sourceValues[0]) < 1e-9);
-        const targetIsConstant = targetValues.every(value => Math.abs(value - targetValues[0]) < 1e-9);
-        if (sourceIsConstant && targetIsConstant && Math.abs(sourceValues[0] - targetValues[0]) < 1e-6) {
-          return { factor: 1, pivot: 0 };
-        }
-        throw new Error(`No se puede calcular S${axisName}: los vértices no permiten determinar ese factor y pivote.`);
-      }
-
-      const factor = (targetValues[secondIndex] - targetValues[distinctPair]) /
-        (sourceValues[secondIndex] - sourceValues[distinctPair]);
-      if (!Number.isFinite(factor)) {
-        throw new Error(`No se pudo calcular el factor S${axisName}.`);
-      }
-      const pivot = Math.abs(1 - factor) < 1e-9
-        ? 0
-        : (targetValues[distinctPair] - factor * sourceValues[distinctPair]) / (1 - factor);
-      const matchesScale = sourceValues.every((value, index) =>
-        Math.abs(pivot + (value - pivot) * factor - targetValues[index]) < 1e-6
-      );
-      if (!matchesScale) {
-        throw new Error(`Las coordenadas no corresponden a una escala con un único pivote en el eje ${axisName}.`);
-      }
-      return { factor, pivot };
-    }
-
-    function deriveScaleParameters() {
-      const coordinateIds = ['in_SAx', 'in_SAy', 'in_SBx', 'in_SBy', 'in_SCx', 'in_SCy'];
-      const values = coordinateIds.map(readNumericInput);
-      const outputIds = ['in_Sx', 'in_Sy', 'in_Px', 'in_Py'];
-      const status = document.getElementById('scaleStatus');
-      const entered = values.filter(value => value !== null).length;
-
-      if (entered === 0) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
         state.S.sx = 1;
         state.S.sy = 1;
         state.S.px = 0;
         state.S.py = 0;
+      };
+
+      if (entered === 0) {
+        resetDefaults();
+        state.T.valid = true;
         state.S.valid = true;
-        setCalculationStatus(status, 'Completa las coordenadas de A_S, B_S y C_S para calcular la escala y su pivote.');
+        setCalculationStatus(translationStatus, 'Ingresa A_TS, B_TS, C_TS y también A_ST, B_ST, C_ST para calcular dx y dy.');
+        setCalculationStatus(scaleStatus, 'Ingresa ambas secuencias para calcular Sx, Sy y el pivote P.');
         return;
       }
-      if (entered !== coordinateIds.length) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+
+      const validTriangles = tsTriangle.entered === 6 && stTriangle.entered === 6;
+      if (!validTriangles) {
+        resetDefaults();
+        state.T.valid = false;
         state.S.valid = false;
-        setCalculationStatus(status, 'Completa las seis coordenadas destino para calcular escala y pivote.', true);
+        const message = 'Completa los seis valores de T → S y los seis valores de S → T.';
+        setCalculationStatus(translationStatus, message, true);
+        setCalculationStatus(scaleStatus, message, true);
         return;
       }
 
       const originals = [state.A, state.B, state.C];
       if (!originals.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        resetDefaults();
+        state.T.valid = false;
         state.S.valid = false;
-        setCalculationStatus(status, 'Primero completa los vértices originales A, B y C.', true);
+        const message = 'Primero completa los vértices originales A, B y C.';
+        setCalculationStatus(translationStatus, message, true);
+        setCalculationStatus(scaleStatus, message, true);
         return;
       }
 
-      const targetX = [values[0], values[2], values[4]];
-      const targetY = [values[1], values[3], values[5]];
       try {
-        const scaleX = deriveScaleAxis(originals.map(point => point.x), targetX, 'x');
-        const scaleY = deriveScaleAxis(originals.map(point => point.y), targetY, 'y');
-        state.S.sx = scaleX.factor;
-        state.S.sy = scaleY.factor;
-        state.S.px = scaleX.pivot;
-        state.S.py = scaleY.pivot;
+        const x = inferScaleAndTranslationAxis(originals, tsTriangle.points, stTriangle.points, 'x');
+        const y = inferScaleAndTranslationAxis(originals, tsTriangle.points, stTriangle.points, 'y');
+        state.T.dx = x.displacement;
+        state.T.dy = y.displacement;
+        state.S.sx = x.factor;
+        state.S.sy = y.factor;
+        state.S.px = x.pivot;
+        state.S.py = y.pivot;
+        state.T.valid = true;
         state.S.valid = true;
-        outputIds.forEach((id, index) => {
-          const value = [scaleX.factor, scaleY.factor, scaleX.pivot, scaleY.pivot][index];
-          document.getElementById(id).value = formatCalculatedNumber(value);
-        });
-        setCalculationStatus(status,
-          `Escala calculada: S = (${formatCalculatedNumber(scaleX.factor)}; ${formatCalculatedNumber(scaleY.factor)}), P = (${formatCalculatedNumber(scaleX.pivot)}; ${formatCalculatedNumber(scaleY.pivot)}).`
+
+        [['in_Tdx', x.displacement], ['in_Tdy', y.displacement], ['in_Sx', x.factor],
+          ['in_Sy', y.factor], ['in_Px', x.pivot], ['in_Py', y.pivot]]
+          .forEach(([id, value]) => {
+            document.getElementById(id).value = formatCalculatedNumber(value);
+          });
+        setCalculationStatus(translationStatus,
+          `Traslación deducida de ambas secuencias: dx = ${formatCalculatedNumber(x.displacement)} y dy = ${formatCalculatedNumber(y.displacement)}.`
+        );
+        setCalculationStatus(scaleStatus,
+          `Escala deducida: S = (${formatCalculatedNumber(x.factor)}; ${formatCalculatedNumber(y.factor)}), P = (${formatCalculatedNumber(x.pivot)}; ${formatCalculatedNumber(y.pivot)}).`
         );
       } catch (error) {
-        outputIds.forEach(id => { document.getElementById(id).value = ''; });
+        resetDefaults();
+        state.T.valid = false;
         state.S.valid = false;
-        setCalculationStatus(status, error.message, true);
+        setCalculationStatus(translationStatus, error.message, true);
+        setCalculationStatus(scaleStatus, error.message, true);
       }
     }
 
@@ -1224,8 +1230,7 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       state.C.x = readNumericInput('in_Cx');
       state.C.y = readNumericInput('in_Cy');
 
-      deriveTranslationParameters();
-      deriveScaleParameters();
+      deriveTransformParameters();
 
       state.R.angle = readNumericInput('in_Rangle');
       state.R.dir = document.getElementById('in_Rdir').value;

@@ -975,7 +975,7 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       for (const layer of frame.layers) {
         ctx.save();
         ctx.strokeStyle = layer.stroke;
-        ctx.fillStyle = layer.fill;
+        ctx.fillStyle = hexToRgba(layer.stroke, layer.fillOpacity);
         ctx.lineWidth = 2.2;
         if (layer.dashed) ctx.setLineDash([5, 4]);
         ctx.beginPath();

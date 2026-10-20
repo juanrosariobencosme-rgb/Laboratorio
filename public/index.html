@@ -22,7 +22,6 @@
             <h1 class="text-base font-bold tracking-tight text-white">Laboratorio de Transformaciones Geométricas</h1>
             <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-mono font-bold">Código A03</span>
           </div>
-          <p class="text-xs text-slate-400">Plano matemático 1:1 ($Y \uparrow$), desglose aritmético manual, validador de consigna y pizarra</p>
         </div>
       </div>
       
@@ -108,7 +107,6 @@
             </div>
           </div>
         </div>
-        <p class="mt-2 text-[11px] text-slate-500">Ingresa los vértices originales A, B y C. Después puedes escribir los triángulos finales T → S y S → T; la aplicación deduce automáticamente los parámetros T y S.</p>
       </div>
 
       <!-- 2. TRASLACIÓN Y ESCALA -->
@@ -124,7 +122,6 @@
               Color <input id="figureColor_ts" type="color" value="#059669" class="h-7 w-9 cursor-pointer rounded border border-emerald-200 bg-white p-0.5" aria-label="Color del triángulo T seguido de S">
             </label>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A (T➔S), B (T➔S) y C (T➔S). Completa también el triángulo S → T para deducir T y S automáticamente.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-blue-200 bg-blue-50/60 p-2">
               <strong class="mb-1 block text-center text-blue-900">A (T➔S)</strong>
@@ -166,7 +163,6 @@
               Color <input id="figureColor_st" type="color" value="#7c3aed" class="h-7 w-9 cursor-pointer rounded border border-purple-200 bg-white p-0.5" aria-label="Color del triángulo S seguido de T">
             </label>
           </div>
-          <p class="mb-2 text-[11px] text-slate-500">Ingresa aquí A (S➔T), B (S➔T) y C (S➔T). Junto con T → S, la aplicación calcula Sx, Sy y el pivote P.</p>
           <div class="grid grid-cols-3 gap-2 text-[11px]">
             <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-2">
               <strong class="mb-1 block text-center text-amber-900">A (S➔T)</strong>
@@ -340,9 +336,7 @@
         </div>
 
         <div class="mt-3 border-t border-slate-100 pt-3">
-          <p class="mb-2 text-[11px] text-slate-500">Personaliza el rótulo y color de cada figura. Deja el nombre vacío si no quieres que aparezca un título sobre ella.</p>
           <div class="space-y-1.5">
-            <p class="px-1 text-[10px] text-slate-500">Puedes arrastrar con el mouse el nombre de cualquier figura para cambiarlo de lugar en el plano.</p>
             <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
               <label for="figureName_orig" class="text-[11px] font-semibold text-slate-700">Original</label>
               <div class="flex justify-end"><input id="figureColor_orig" type="color" value="#0f172a" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura original"></div>
@@ -438,7 +432,6 @@
 
         <!-- 1. PESTAÑA: TABLA DE COORDENADAS -->
         <div id="panel_table" class="p-4 space-y-4">
-          <p class="text-xs text-slate-600">Cada fila corresponde al mismo vértice original (A, B o C); las columnas muestran automáticamente dónde queda en cada operación: Solo T, Solo S, T → S y S → T.</p>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead>
@@ -462,14 +455,6 @@
         <!-- 2. PESTAÑA: CÁLCULOS PASO A PASO (ULTRA DETALLADO PARA HACER A MANO) -->
         <div id="panel_formulas" class="p-4 space-y-5 hidden">
           
-          <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-950 flex items-center gap-2.5">
-            <i class="fa-solid fa-graduation-cap text-indigo-600 text-base"></i>
-            <div>
-              <p class="font-bold">Guía para realizar tus cálculos a mano en el cuaderno:</p>
-              <p class="text-[11px] text-indigo-800">Cada tarjeta sigue un vértice. Lee la operación, revisa el punto intermedio y compara el resultado final de cada orden.</p>
-            </div>
-          </div>
-
           <!-- Contenedor dinámico de desglose vértice por vértice -->
           <div id="manualCalculationsContainer" class="space-y-4">
             <!-- Inyectado por JS -->
@@ -483,7 +468,6 @@
               <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                 <i class="fa-solid fa-file-circle-check text-indigo-600"></i> Mandato / Consigna Oficial del Maestro
               </h3>
-              <p class="text-xs text-slate-500">Puedes pegar o modificar las instrucciones del maestro aquí para contrastar los requerimientos de la entrega.</p>
             </div>
             <button id="btnResetDefaultMandate" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-xs font-medium border border-slate-300">
               Limpiar Mandato
@@ -523,7 +507,6 @@
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                   <i class="fa-solid fa-file-signature text-indigo-600"></i> Informe Entregable Generado
                 </h4>
-                <p class="text-xs text-slate-500">Documento formal con código A03, tabla de vértices y justificación teórica listo para copiar</p>
               </div>
               <button id="btnCopyFinalReport" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs">
                 <i class="fa-regular fa-copy"></i> Copiar Informe
@@ -548,7 +531,6 @@
               <textarea id="reportConclusion" rows="3" placeholder="¿Qué observaste al comparar los resultados? Escribe aquí tu conclusión." class="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:outline-indigo-500"></textarea>
               <label for="reportImageInput" class="block text-xs font-semibold text-slate-800">Imágenes y evidencias guardadas</label>
               <input id="reportImageInput" type="file" accept="image/*" multiple class="block w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-700">
-              <p class="text-[11px] text-slate-500">Selecciona varias imágenes desde tu dispositivo. Se incluyen únicamente en este informe local y no se suben a ningún servidor.</p>
               <div id="reportImageStatus" class="text-xs text-slate-600" role="status" aria-live="polite"></div>
               <div id="reportImageList" class="grid grid-cols-2 gap-2 sm:grid-cols-3"></div>
             </div>
@@ -556,7 +538,6 @@
             <textarea id="finalReportArea" rows="12" class="w-full p-3 font-mono text-xs bg-slate-900 text-slate-100 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
 
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <p class="text-[11px] text-slate-500">El botón abre la vista de impresión del navegador; elige “Guardar como PDF”.</p>
               <button id="btnExportPDF" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500">
                 <i class="fa-solid fa-file-pdf mr-1"></i> Preparar informe PDF
               </button>

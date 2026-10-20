@@ -547,11 +547,11 @@
         tr.innerHTML = `
           <td class="p-3 font-bold text-slate-800 border">${p.name}</td>
           <td class="p-3 border font-semibold text-slate-900 bg-slate-50/70">(${p.x}; ${p.y})</td>
-          <td class="p-3 border font-semibold text-blue-700">${p.name}_T (${data.tOnly[idx].x}; ${data.tOnly[idx].y})</td>
-          <td class="p-3 border font-semibold text-amber-700">${p.name}_S (${data.sOnly[idx].x}; ${data.sOnly[idx].y})</td>
-          <td class="p-3 border font-bold text-emerald-800 bg-emerald-50/50">${p.name}_TS (${data.tsFinal[idx].x}; ${data.tsFinal[idx].y})</td>
-          <td class="p-3 border font-bold text-purple-800 bg-purple-50/50">${p.name}_ST (${data.stFinal[idx].x}; ${data.stFinal[idx].y})</td>
-          <td class="p-3 border font-bold text-rose-800 bg-rose-50/50">${data.rotationEnabled ? `${p.name}_R (${data.rotFinal[idx].x}; ${data.rotFinal[idx].y})` : '—'}</td>
+          <td class="p-3 border font-semibold text-blue-700">(${data.tOnly[idx].x}; ${data.tOnly[idx].y})</td>
+          <td class="p-3 border font-semibold text-amber-700">(${data.sOnly[idx].x}; ${data.sOnly[idx].y})</td>
+          <td class="p-3 border font-bold text-emerald-800 bg-emerald-50/50">(${data.tsFinal[idx].x}; ${data.tsFinal[idx].y})</td>
+          <td class="p-3 border font-bold text-purple-800 bg-purple-50/50">(${data.stFinal[idx].x}; ${data.stFinal[idx].y})</td>
+          <td class="p-3 border font-bold text-rose-800 bg-rose-50/50">${data.rotationEnabled ? `(${data.rotFinal[idx].x}; ${data.rotFinal[idx].y})` : '—'}</td>
         `;
         coordsTableBody.appendChild(tr);
       });

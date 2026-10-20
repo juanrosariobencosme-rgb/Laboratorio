@@ -53,5 +53,5 @@ El archivo `netlify.toml` configura el build con `npm ci && npm run build` y pub
 - Helmet establece una política CSP que solo permite scripts, estilos, iconos y fuentes servidos por el propio sitio, además de otras cabeceras defensivas.
 - Tailwind se compila durante el build: no se ejecuta el compilador CDN en el navegador.
 - Express desactiva la cabecera `X-Powered-By`, evita servir archivos ocultos y responde con 404 para rutas inexistentes.
-- Las notas de la pizarra se guardan localmente en el navegador mediante `localStorage`; no se envían a un servidor.
+- Las imágenes añadidas al informe PDF se procesan localmente en el navegador y no se envían al servidor.
 - Mantén las dependencias actualizadas y revisa `npm audit` antes de publicar cambios.

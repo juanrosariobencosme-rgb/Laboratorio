@@ -123,14 +123,14 @@
             <span class="text-[11px] text-slate-400">Desplazamiento</span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs">
-            <div class="flex items-center justify-between bg-blue-50/60 border border-blue-200 rounded-xl p-2">
-              <span class="font-bold text-blue-900 font-mono text-xs">dx:</span>
-              <input type="number" id="in_Tdx" step="0.5" class="w-16 bg-white border border-blue-300 rounded px-2 py-0.5 text-center font-mono font-bold text-blue-950 focus:outline-blue-500">
-            </div>
-            <div class="flex items-center justify-between bg-blue-50/60 border border-blue-200 rounded-xl p-2">
-              <span class="font-bold text-blue-900 font-mono text-xs">dy:</span>
-              <input type="number" id="in_Tdy" step="0.5" class="w-16 bg-white border border-blue-300 rounded px-2 py-0.5 text-center font-mono font-bold text-blue-950 focus:outline-blue-500">
-            </div>
+            <label class="bg-blue-50/60 border border-blue-200 rounded-xl p-2.5">
+              <span class="block font-bold text-blue-900 font-mono mb-1">dx</span>
+              <input type="number" id="in_Tdx" step="0.5" class="w-full bg-white border border-blue-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-blue-950 focus:outline-blue-500" aria-label="Desplazamiento horizontal dx">
+            </label>
+            <label class="bg-blue-50/60 border border-blue-200 rounded-xl p-2.5">
+              <span class="block font-bold text-blue-900 font-mono mb-1">dy</span>
+              <input type="number" id="in_Tdy" step="0.5" class="w-full bg-white border border-blue-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-blue-950 focus:outline-blue-500" aria-label="Desplazamiento vertical dy">
+            </label>
           </div>
         </div>
 
@@ -143,14 +143,14 @@
             <span class="text-[11px] text-slate-400">Factores</span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs mb-2">
-            <div class="flex items-center justify-between bg-amber-50/60 border border-amber-200 rounded-xl p-2">
-              <span class="font-bold text-amber-900 font-mono text-xs">Sx:</span>
-              <input type="number" id="in_Sx" step="0.5" class="w-16 bg-white border border-amber-300 rounded px-2 py-0.5 text-center font-mono font-bold text-amber-950 focus:outline-amber-500">
-            </div>
-            <div class="flex items-center justify-between bg-amber-50/60 border border-amber-200 rounded-xl p-2">
-              <span class="font-bold text-amber-900 font-mono text-xs">Sy:</span>
-              <input type="number" id="in_Sy" step="0.5" class="w-16 bg-white border border-amber-300 rounded px-2 py-0.5 text-center font-mono font-bold text-amber-950 focus:outline-amber-500">
-            </div>
+            <label class="bg-amber-50/60 border border-amber-200 rounded-xl p-2.5">
+              <span class="block font-bold text-amber-900 font-mono mb-1">Sx</span>
+              <input type="number" id="in_Sx" step="0.5" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-amber-950 focus:outline-amber-500" aria-label="Factor de escala Sx">
+            </label>
+            <label class="bg-amber-50/60 border border-amber-200 rounded-xl p-2.5">
+              <span class="block font-bold text-amber-900 font-mono mb-1">Sy</span>
+              <input type="number" id="in_Sy" step="0.5" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-center font-mono font-bold text-amber-950 focus:outline-amber-500" aria-label="Factor de escala Sy">
+            </label>
           </div>
           
           <!-- Pivote P -->
@@ -162,14 +162,14 @@
               <button id="btnPtoOrigin" class="text-[11px] text-amber-700 font-semibold hover:underline bg-white px-2 py-0.5 rounded border border-amber-200 shadow-2xs">Fijar en (0,0)</button>
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <div class="flex items-center justify-between">
-                <span class="text-amber-800 font-mono text-[11px]">Px:</span>
-                <input type="number" id="in_Px" step="0.5" class="w-16 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-amber-500">
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-amber-800 font-mono text-[11px]">Py:</span>
-                <input type="number" id="in_Py" step="0.5" class="w-16 bg-white border border-amber-200 rounded px-1.5 py-0.5 text-center font-mono focus:outline-amber-500">
-              </div>
+              <label class="text-amber-800 font-mono text-[11px]">
+                <span class="block mb-1">Px</span>
+                <input type="number" id="in_Px" step="0.5" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-center font-mono text-slate-800 focus:outline-amber-500" aria-label="Coordenada horizontal del pivote de escala Px">
+              </label>
+              <label class="text-amber-800 font-mono text-[11px]">
+                <span class="block mb-1">Py</span>
+                <input type="number" id="in_Py" step="0.5" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-center font-mono text-slate-800 focus:outline-amber-500" aria-label="Coordenada vertical del pivote de escala Py">
+              </label>
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@
         <div class="space-y-1.5 text-xs">
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-slate-900 border border-black shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-bold text-slate-900">Original (A, B, C)</span>
             </span>
             <input type="checkbox" id="layer_orig" checked class="w-4 h-4 rounded text-indigo-600 accent-indigo-600 cursor-pointer">
@@ -256,7 +256,7 @@
 
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50/50 cursor-pointer border border-transparent hover:border-blue-100 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-blue-600 shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-semibold text-blue-900">Solo Traslación (T)</span>
             </span>
             <input type="checkbox" id="layer_t" class="w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer">
@@ -264,7 +264,7 @@
 
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-amber-50/50 cursor-pointer border border-transparent hover:border-amber-100 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-amber-500 shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-semibold text-amber-900">Solo Escala (S)</span>
             </span>
             <input type="checkbox" id="layer_s" class="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer">
@@ -272,7 +272,7 @@
 
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-emerald-50/50 cursor-pointer border border-emerald-100 bg-emerald-50/30 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-emerald-600 shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-bold text-emerald-950">Secuencia T → S</span>
             </span>
             <input type="checkbox" id="layer_ts" class="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer">
@@ -280,7 +280,7 @@
 
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-purple-50/50 cursor-pointer border border-purple-100 bg-purple-50/30 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-purple-600 shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-bold text-purple-950">Secuencia S → T</span>
             </span>
             <input type="checkbox" id="layer_st" class="w-4 h-4 rounded text-purple-600 accent-purple-600 cursor-pointer">
@@ -288,11 +288,47 @@
 
           <label class="flex items-center justify-between p-2 rounded-xl hover:bg-rose-50/50 cursor-pointer border border-rose-100 bg-rose-50/30 transition">
             <span class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-md bg-rose-600 shadow-2xs"></span>
+              <span class="w-3.5 h-3.5 rounded-md border border-slate-300 bg-white"></span>
               <span class="font-bold text-rose-950">Rotación R</span>
             </span>
             <input type="checkbox" id="layer_r" class="w-4 h-4 rounded text-rose-600 accent-rose-600 cursor-pointer">
           </label>
+        </div>
+
+        <div class="mt-3 border-t border-slate-100 pt-3">
+          <p class="mb-2 text-[11px] text-slate-500">Personaliza el rótulo y color de cada figura. Deja el nombre vacío si no quieres que aparezca un título sobre ella.</p>
+          <div class="space-y-1.5">
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_orig" class="text-[11px] font-semibold text-slate-700">Original</label>
+              <div class="flex justify-end"><input id="figureColor_orig" type="color" value="#0f172a" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura original"></div>
+              <input id="figureName_orig" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_t" class="text-[11px] font-semibold text-slate-700">Solo T</label>
+              <div class="flex justify-end"><input id="figureColor_t" type="color" value="#2563eb" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura Solo T"></div>
+              <input id="figureName_t" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_s" class="text-[11px] font-semibold text-slate-700">Solo S</label>
+              <div class="flex justify-end"><input id="figureColor_s" type="color" value="#d97706" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura Solo S"></div>
+              <input id="figureName_s" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_ts" class="text-[11px] font-semibold text-slate-700">Secuencia T → S</label>
+              <div class="flex justify-end"><input id="figureColor_ts" type="color" value="#059669" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura T seguido de S"></div>
+              <input id="figureName_ts" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_st" class="text-[11px] font-semibold text-slate-700">Secuencia S → T</label>
+              <div class="flex justify-end"><input id="figureColor_st" type="color" value="#7c3aed" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura S seguido de T"></div>
+              <input id="figureName_st" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+            <div class="grid grid-cols-[1fr_2.5rem] items-center gap-2">
+              <label for="figureName_r" class="text-[11px] font-semibold text-slate-700">Rotación R</label>
+              <div class="flex justify-end"><input id="figureColor_r" type="color" value="#e11d48" class="h-8 w-10 cursor-pointer rounded border border-slate-200 bg-white p-0.5" aria-label="Color de figura rotada"></div>
+              <input id="figureName_r" type="text" maxlength="40" placeholder="Nombre personalizado (opcional)" class="col-span-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-indigo-500">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -337,7 +373,7 @@
         </div>
       </div>
 
-      <!-- TABS: TABLA, FÓRMULAS PASO A PASO, PIZARRA, MANDATO E INFORME -->
+      <!-- TABS: TABLA, FÓRMULAS, MANDATO E INFORME -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <!-- Barra de navegación de pestañas -->
         <div class="flex flex-wrap border-b border-slate-200 bg-slate-50 text-xs">
@@ -346,9 +382,6 @@
           </button>
           <button id="tab_formulas" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
             <i class="fa-solid fa-calculator"></i> Cálculos Paso a Paso (Manual)
-          </button>
-          <button id="tab_scratchpad" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
-            <i class="fa-solid fa-pen-to-square"></i> Pizarra / Bloc de Cálculos
           </button>
           <button id="tab_mandate" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 transition">
             <i class="fa-solid fa-file-lines"></i> Mandato del Maestro
@@ -388,40 +421,13 @@
             <i class="fa-solid fa-graduation-cap text-indigo-600 text-base"></i>
             <div>
               <p class="font-bold">Guía para realizar tus cálculos a mano en el cuaderno:</p>
-              <p class="text-[11px] text-indigo-800">Aquí tienes cada operación aritmética detallada paso a paso, con las restas de pivote, multiplicaciones y sumas finales sustituyendo tus valores reales.</p>
+              <p class="text-[11px] text-indigo-800">Cada tarjeta sigue un vértice. Lee la operación, revisa el punto intermedio y compara el resultado final de cada orden.</p>
             </div>
           </div>
 
           <!-- Contenedor dinámico de desglose vértice por vértice -->
           <div id="manualCalculationsContainer" class="space-y-4">
             <!-- Inyectado por JS -->
-          </div>
-        </div>
-
-        <!-- 3. PESTAÑA: PIZARRA / BLOC DE APUNTES Y CÁLCULOS MANUALES -->
-        <div id="panel_scratchpad" class="p-4 space-y-3 hidden">
-          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                <i class="fa-solid fa-chalkboard-user text-indigo-600"></i> Pizarra Libre de Cálculos y Registro de Medidas
-              </h3>
-              <p class="text-xs text-slate-500">Anota tus cálculos manuales, operaciones intermedias o medidas utilizadas. Se guardan automáticamente en tu navegador.</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <button id="btnInsertCalculationsToBoard" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs">
-                <i class="fa-solid fa-arrow-down-to-bracket"></i> Pegar Cálculos Actuales a la Pizarra
-              </button>
-              <button id="btnClearScratchpad" class="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1">
-                <i class="fa-solid fa-eraser"></i> Limpiar
-              </button>
-            </div>
-          </div>
-
-          <textarea id="scratchpadArea" rows="14" placeholder="Escribe aquí tus cálculos manuales, notas de clase, o presiona 'Pegar Cálculos Actuales a la Pizarra' para tener una copia exacta de las medidas que utilizaste..." class="w-full p-3 font-mono text-xs bg-slate-900 text-emerald-400 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
-          
-          <div class="flex items-center justify-between text-[11px] text-slate-400">
-            <span>Registro seguro local (LocalStorage activado)</span>
-            <span id="scratchpadSaveStatus" class="text-emerald-600 font-semibold hidden"><i class="fa-solid fa-check"></i> Guardado automático</span>
           </div>
         </div>
 
@@ -490,7 +496,26 @@
               </div>
             </div>
 
+            <div class="space-y-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
+              <label for="reportNarrative" class="block text-xs font-semibold text-slate-800">Explicación y conclusión para el informe</label>
+              <textarea id="reportNarrative" rows="5" placeholder="Escribe tu explicación. Puedes revisar el borrador y reescribirlo con tus propias palabras." class="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:outline-indigo-500"></textarea>
+              <label for="reportConclusion" class="block text-xs font-semibold text-slate-800">Observaciones y conclusión</label>
+              <textarea id="reportConclusion" rows="3" placeholder="¿Qué observaste al comparar los resultados? Escribe aquí tu conclusión." class="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:outline-indigo-500"></textarea>
+              <label for="reportImageInput" class="block text-xs font-semibold text-slate-800">Imágenes y evidencias guardadas</label>
+              <input id="reportImageInput" type="file" accept="image/*" multiple class="block w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-700">
+              <p class="text-[11px] text-slate-500">Selecciona varias imágenes desde tu dispositivo. Se incluyen únicamente en este informe local y no se suben a ningún servidor.</p>
+              <div id="reportImageStatus" class="text-xs text-slate-600" role="status" aria-live="polite"></div>
+              <div id="reportImageList" class="grid grid-cols-2 gap-2 sm:grid-cols-3"></div>
+            </div>
+
             <textarea id="finalReportArea" rows="12" class="w-full p-3 font-mono text-xs bg-slate-900 text-slate-100 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-[11px] text-slate-500">El botón abre la vista de impresión del navegador; elige “Guardar como PDF”.</p>
+              <button id="btnExportPDF" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500">
+                <i class="fa-solid fa-file-pdf mr-1"></i> Preparar informe PDF
+              </button>
+            </div>
             
             <div id="copyToast" class="hidden text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg font-bold flex items-center gap-2">
               <i class="fa-solid fa-circle-check text-emerald-600"></i> ¡Informe formal copiado al portapapeles con éxito!
@@ -503,6 +528,8 @@
     </div>
 
   </main>
+
+  <div id="printDocument" aria-hidden="true"></div>
 
   <!-- LÓGICA JAVASCRIPT COMPLETA -->
   <script defer src="./js/app.js"></script>

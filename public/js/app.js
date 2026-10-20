@@ -17,6 +17,14 @@
         st: false,
         r: false
       },
+      figureStyles: {
+        orig: { name: '', color: '#0f172a' },
+        t: { name: '', color: '#2563eb' },
+        s: { name: '', color: '#d97706' },
+        ts: { name: '', color: '#059669' },
+        st: { name: '', color: '#7c3aed' },
+        r: { name: '', color: '#e11d48' }
+      },
       // Navegación en el plano (pan y zoom)
       view: {
         scale: 28, // Píxeles por unidad (1:1 aspect ratio garantizado)
@@ -34,13 +42,26 @@
     const liveCoordsBadge = document.getElementById('liveCoordsBadge');
     const coordsTableBody = document.getElementById('coordsTableBody');
     const manualCalculationsContainer = document.getElementById('manualCalculationsContainer');
-    const scratchpadArea = document.getElementById('scratchpadArea');
-    const scratchpadSaveStatus = document.getElementById('scratchpadSaveStatus');
     const mandateTextArea = document.getElementById('mandateTextArea');
     const validationCardsContainer = document.getElementById('validationCardsContainer');
     const validatorSummaryPill = document.getElementById('validatorSummaryPill');
     const finalReportArea = document.getElementById('finalReportArea');
     const copyToast = document.getElementById('copyToast');
+    const reportNarrative = document.getElementById('reportNarrative');
+    const reportImageList = document.getElementById('reportImageList');
+    const reportImageStatus = document.getElementById('reportImageStatus');
+    const reportImages = [];
+    let nextReportImageId = 1;
+
+    const figureKeys = ['orig', 't', 's', 'ts', 'st', 'r'];
+    const reportExplanation = () => {
+      const data = computeGeometry();
+      if (!data) return '';
+      const rotationText = data.rotationEnabled
+        ? ` El giro de ${state.R.angle}° en sentido ${state.R.dir === 'antihorario' ? 'antihorario' : 'horario'} se aplicó con el pivote K=(${state.R.kx}; ${state.R.ky}).`
+        : '';
+      return `En esta práctica partí de los vértices A, B y C y comparé varias transformaciones en el plano. La traslación desplaza cada punto con el vector T=(${state.T.dx}; ${state.T.dy}); la escala modifica sus distancias respecto al pivote P=(${state.S.px}; ${state.S.py}) con factores (${state.S.sx}; ${state.S.sy}). Al cambiar el orden de estas operaciones, se obtienen los resultados T → S y S → T que aparecen en la tabla.${rotationText} Las figuras y sus coordenadas permiten comprobar cada resultado. Reescribiré esta explicación con mis propias palabras y añadiré mis observaciones.`;
+    };
 
     // 1. MATEMÁTICA Y TRANSFORMACIONES
     function calcT(pt, dx, dy) {
@@ -68,6 +89,29 @@
         x: Math.round((rotX + kx) * 1000) / 1000,
         y: Math.round((rotY + ky) * 1000) / 1000
       };
+    }
+
+    function hexToRgba(hex, alpha) {
+      const color = hex.slice(1);
+      const red = Number.parseInt(color.slice(0, 2), 16);
+      const green = Number.parseInt(color.slice(2, 4), 16);
+      const blue = Number.parseInt(color.slice(4, 6), 16);
+      return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+    }
+
+    function escapeXml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&apos;'
+      })[character]);
+    }
+
+    function hasScalePivotCoordinates() {
+      return document.getElementById('in_Px').value.trim() !== '' &&
+        document.getElementById('in_Py').value.trim() !== '';
     }
 
     // Calcula todas las figuras
@@ -131,14 +175,24 @@
     }
 
     function getVisibleExportLayers(data) {
-      const layers = [];
-      if (state.layers.orig) layers.push({ key: 'orig', name: '02_Original', points: data.orig, stroke: '#0f172a', fill: 'rgba(15, 23, 42, 0.2)' });
-      if (state.layers.t) layers.push({ key: 't', name: '03_Solo_Traslacion_T', points: data.tOnly, stroke: '#2563eb', fill: 'rgba(37, 99, 235, 0.2)', dashed: true });
-      if (state.layers.s) layers.push({ key: 's', name: '04_Solo_Escala_S', points: data.sOnly, stroke: '#d97706', fill: 'rgba(217, 119, 6, 0.2)', dashed: true });
-      if (state.layers.ts) layers.push({ key: 'ts', name: '05_Secuencia_T_luego_S', points: data.tsFinal, stroke: '#059669', fill: 'rgba(5, 150, 105, 0.25)' });
-      if (state.layers.st) layers.push({ key: 'st', name: '06_Secuencia_S_luego_T', points: data.stFinal, stroke: '#7c3aed', fill: 'rgba(124, 58, 237, 0.25)' });
-      if (state.layers.r && data.rotationEnabled) layers.push({ key: 'r', name: '07_Rotacion_R', points: data.rotFinal, stroke: '#e11d48', fill: 'rgba(225, 29, 72, 0.25)' });
-      return layers;
+      const definitions = [
+        { key: 'orig', layerName: 'Figura_original', points: data.orig, dashed: false },
+        { key: 't', layerName: 'Figura_trasladada', points: data.tOnly, dashed: true },
+        { key: 's', layerName: 'Figura_escalada', points: data.sOnly, dashed: true },
+        { key: 'ts', layerName: 'Figura_T_despues_S', points: data.tsFinal, dashed: false },
+        { key: 'st', layerName: 'Figura_S_despues_T', points: data.stFinal, dashed: false },
+        { key: 'r', layerName: 'Figura_rotada', points: data.rotFinal, dashed: false }
+      ];
+
+      return definitions
+        .filter(layer => state.layers[layer.key] && (layer.key !== 'r' || data.rotationEnabled))
+        .map((layer, index) => ({
+          ...layer,
+          name: state.figureStyles[layer.key].name.trim(),
+          inkscapeLabel: state.figureStyles[layer.key].name.trim() || `Figura_${index + 1}_sin_nombre`,
+          stroke: state.figureStyles[layer.key].color,
+          fillOpacity: layer.key === 'orig' ? 0.15 : 0.22
+        }));
     }
 
     function getQuadrantExportFrame(data, width, height) {
@@ -148,7 +202,7 @@
       const layers = getVisibleExportLayers(data);
       const points = layers.flatMap(layer => layer.points);
 
-      if (state.layers.s || state.layers.ts || state.layers.st) {
+      if ((state.layers.s || state.layers.ts || state.layers.st) && hasScalePivotCoordinates()) {
         points.push({ x: state.S.px, y: state.S.py });
       }
       if (state.layers.r && data.rotationEnabled) {
@@ -324,11 +378,12 @@
         return;
       }
 
-      function drawShape(pts, stroke, fill, label, dashed = false) {
+      function drawShape(pts, layerKey, dashed = false) {
+        const { color, name } = state.figureStyles[layerKey];
         ctx.save();
         if (dashed) ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = stroke;
-        ctx.fillStyle = fill;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = hexToRgba(color, layerKey === 'orig' ? 0.15 : 0.22);
         ctx.lineWidth = 2.2;
 
         ctx.beginPath();
@@ -348,7 +403,7 @@
           const c = toCanvas(p.x, p.y);
           ctx.beginPath();
           ctx.arc(c.cx, c.cy, 4.5, 0, Math.PI * 2);
-          ctx.fillStyle = stroke;
+          ctx.fillStyle = color;
           ctx.fill();
           ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 2;
@@ -356,27 +411,29 @@
 
           ctx.fillStyle = "#0f172a";
           ctx.font = "bold 10px 'JetBrains Mono', monospace";
-          ctx.fillText(`${p.name}(${p.x};${p.y})`, c.cx + 6, c.cy - 6);
+          const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layerKey] || '';
+          ctx.fillText(`${p.name}${suffix}(${p.x};${p.y})`, c.cx + 6, c.cy - 6);
         });
 
-        // Etiqueta del centroide
-        const cx = (pts[0].x + pts[1].x + pts[2].x) / 3;
-        const cy = (pts[0].y + pts[1].y + pts[2].y) / 3;
-        const centerCanvas = toCanvas(cx, cy);
-        ctx.fillStyle = stroke;
-        ctx.font = "bold 10px Inter, sans-serif";
-        ctx.fillText(label, centerCanvas.cx - 15, centerCanvas.cy);
+        if (name.trim()) {
+          const cx = (pts[0].x + pts[1].x + pts[2].x) / 3;
+          const cy = (pts[0].y + pts[1].y + pts[2].y) / 3;
+          const centerCanvas = toCanvas(cx, cy);
+          ctx.fillStyle = color;
+          ctx.font = "bold 10px Inter, sans-serif";
+          ctx.fillText(name.trim(), centerCanvas.cx - ctx.measureText(name.trim()).width / 2, centerCanvas.cy);
+        }
       }
 
-      if (state.layers.orig) drawShape(data.orig, "#0f172a", "rgba(15, 23, 42, 0.15)", "Original");
-      if (state.layers.t) drawShape(data.tOnly, "#2563eb", "rgba(37, 99, 235, 0.15)", "Solo T", true);
-      if (state.layers.s) drawShape(data.sOnly, "#d97706", "rgba(217, 119, 6, 0.15)", "Solo S", true);
-      if (state.layers.ts) drawShape(data.tsFinal, "#059669", "rgba(5, 150, 105, 0.25)", "T → S");
-      if (state.layers.st) drawShape(data.stFinal, "#7c3aed", "rgba(124, 58, 237, 0.25)", "S → T");
-      if (state.layers.r && data.rotationEnabled) drawShape(data.rotFinal, "#e11d48", "rgba(225, 29, 72, 0.25)", `Rotación (${state.R.angle}°)`);
+      if (state.layers.orig) drawShape(data.orig, 'orig');
+      if (state.layers.t) drawShape(data.tOnly, 't', true);
+      if (state.layers.s) drawShape(data.sOnly, 's', true);
+      if (state.layers.ts) drawShape(data.tsFinal, 'ts');
+      if (state.layers.st) drawShape(data.stFinal, 'st');
+      if (state.layers.r && data.rotationEnabled) drawShape(data.rotFinal, 'r');
 
       // Pivote P (Escala)
-      if (state.layers.s || state.layers.ts || state.layers.st) {
+      if ((state.layers.s || state.layers.ts || state.layers.st) && hasScalePivotCoordinates()) {
         const cp = toCanvas(state.S.px, state.S.py);
         ctx.beginPath();
         ctx.arc(cp.cx, cp.cy, 5, 0, Math.PI * 2);
@@ -464,7 +521,7 @@
 
       data.orig.forEach((p, idx) => {
         const card = document.createElement('div');
-        card.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs space-y-3";
+        card.className = "bg-white border border-slate-200 rounded-xl p-3 text-xs";
 
         // Cálculos numéricos para cada sección
         // Solo T
@@ -519,79 +576,29 @@
         const rotFinY = rotRelY + state.R.ky;
 
         card.innerHTML = `
-          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-            <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-slate-800 inline-block"></span> Vértice ${p.name} = (${p.x}; ${p.y})
-            </h4>
-            <span class="text-[11px] font-mono text-slate-500">Punto de partida original</span>
+          <h4 class="mb-2 font-bold text-sm text-slate-800">Vértice original ${p.name} = (${p.x}; ${p.y})</h4>
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <section class="rounded-lg border border-blue-200 bg-blue-50/60 p-2.5">
+              <h5 class="mb-1 font-bold text-blue-900">Solo T · sumar el desplazamiento</h5>
+              <p class="font-mono text-slate-700">${p.name}_T = (${p.x} + ${state.T.dx}; ${p.y} + ${state.T.dy}) = <strong>(${tX}; ${tY})</strong></p>
+            </section>
+            <section class="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5">
+              <h5 class="mb-1 font-bold text-amber-900">Solo S · medir desde el pivote P</h5>
+              <p class="font-mono text-slate-700">${p.name}_S = (${state.S.px} + ${state.S.sx}(${p.x} − ${state.S.px}); ${state.S.py} + ${state.S.sy}(${p.y} − ${state.S.py})) = <strong>(${sFinX}; ${sFinY})</strong></p>
+            </section>
+            <section class="rounded-lg border border-emerald-200 bg-emerald-50/60 p-2.5">
+              <h5 class="mb-1 font-bold text-emerald-900">T → S · primero trasladar, después escalar</h5>
+              <p class="font-mono text-slate-700">Intermedio: (${tsPaso1X}; ${tsPaso1Y}) → <strong>${p.name}_TS = (${tsFinX}; ${tsFinY})</strong></p>
+            </section>
+            <section class="rounded-lg border border-purple-200 bg-purple-50/60 p-2.5">
+              <h5 class="mb-1 font-bold text-purple-900">S → T · primero escalar, después trasladar</h5>
+              <p class="font-mono text-slate-700">Intermedio: (${sFinX}; ${sFinY}) → <strong>${p.name}_ST = (${stFinX}; ${stFinY})</strong></p>
+            </section>
+            ${data.rotationEnabled ? `<section class="rounded-lg border border-rose-200 bg-rose-50/60 p-2.5 sm:col-span-2">
+              <h5 class="mb-1 font-bold text-rose-900">Rotación · ${state.R.angle}° ${state.R.dir === 'antihorario' ? 'antihorarios' : 'horarios'} alrededor de K=(${state.R.kx}; ${state.R.ky})</h5>
+              <p class="font-mono text-slate-700">${basePt.name} (${basePt.x}; ${basePt.y}) − K = (${kRelX}; ${kRelY}); ${formulaText} → <strong>${p.name}_R = (${rotFinX}; ${rotFinY})</strong></p>
+            </section>` : ''}
           </div>
-
-          <!-- 1. Solo T -->
-          <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-2.5 space-y-1">
-            <span class="font-bold text-blue-900 block flex items-center gap-1">
-              <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i> 1) Solo Traslación T = (${state.T.dx}; ${state.T.dy})
-            </span>
-            <div class="font-mono text-slate-700 pl-2 space-y-0.5">
-              <div>• X = x + dx = ${p.x} + (${state.T.dx}) = <strong>${tX}</strong></div>
-              <div>• Y = y + dy = ${p.y} + (${state.T.dy}) = <strong>${tY}</strong></div>
-              <div class="text-blue-800 font-bold pt-1">➜ Resultado: (${tX}; ${tY})</div>
-            </div>
-          </div>
-
-          <!-- 2. Solo S con pivote -->
-          <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 space-y-1">
-            <span class="font-bold text-amber-900 block flex items-center gap-1">
-              <i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i> 2) Solo Escala S = (${state.S.sx}; ${state.S.sy}) respecto al Pivote P = (${state.S.px}; ${state.S.py})
-            </span>
-            <div class="font-mono text-slate-700 pl-2 space-y-0.5">
-              <div>• Paso 1 (Restar pivote): (${p.x} - ${state.S.px}; ${p.y} - ${state.S.py}) = (${sRelX}; ${sRelY})</div>
-              <div>• Paso 2 (Multiplicar factores): (${state.S.sx} · ${sRelX}; ${state.S.sy} · ${sRelY}) = (${sScaledX}; ${sScaledY})</div>
-              <div>• Paso 3 (Volver a sumar pivote): (${sScaledX} + ${state.S.px}; ${sScaledY} + ${state.S.py}) = <strong>(${sFinX}; ${sFinY})</strong></div>
-              <div class="text-amber-800 font-bold pt-1">➜ Resultado: (${sFinX}; ${sFinY})</div>
-            </div>
-          </div>
-
-          <!-- 3. Secuencia T -> S -->
-          <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 space-y-1">
-            <span class="font-bold text-emerald-950 block flex items-center gap-1">
-              <i class="fa-solid fa-arrow-right-long text-[10px]"></i> 3) Secuencia T → S (Primero Trasladar, luego Escalar)
-            </span>
-            <div class="font-mono text-slate-700 pl-2 space-y-0.5">
-              <div>• Paso 1 (Trasladar original): (${p.x}+${state.T.dx}; ${p.y}+${state.T.dy}) = <strong>(${tsPaso1X}; ${tsPaso1Y})</strong> [Resultado intermedio]</div>
-              <div>• Paso 2 (Escalar resultado intermedio con pivote P):</div>
-              <div class="pl-3">X = ${state.S.px} + ${state.S.sx} · (${tsPaso1X} - ${state.S.px}) = <strong>${tsFinX}</strong></div>
-              <div class="pl-3">Y = ${state.S.py} + ${state.S.sy} · (${tsPaso1Y} - ${state.S.py}) = <strong>${tsFinY}</strong></div>
-              <div class="text-emerald-800 font-bold pt-1">➜ Resultado Final: (${tsFinX}; ${tsFinY})</div>
-            </div>
-          </div>
-
-          <!-- 4. Secuencia S -> T -->
-          <div class="bg-purple-50/70 border border-purple-200 rounded-xl p-2.5 space-y-1">
-            <span class="font-bold text-purple-950 block flex items-center gap-1">
-              <i class="fa-solid fa-arrow-right-long text-[10px]"></i> 4) Secuencia S → T (Primero Escalar, luego Trasladar)
-            </span>
-            <div class="font-mono text-slate-700 pl-2 space-y-0.5">
-              <div>• Paso 1 (Escalar original con pivote P): <strong>(${sFinX}; ${sFinY})</strong> [Resultado intermedio]</div>
-              <div>• Paso 2 (Sumar traslación al resultado escalado):</div>
-              <div class="pl-3">X = ${sFinX} + (${state.T.dx}) = <strong>${stFinX}</strong></div>
-              <div class="pl-3">Y = ${sFinY} + (${state.T.dy}) = <strong>${stFinY}</strong></div>
-              <div class="text-purple-800 font-bold pt-1">➜ Resultado Final: (${stFinX}; ${stFinY})</div>
-            </div>
-          </div>
-
-          ${data.rotationEnabled ? `<!-- 5. Rotación con Pivote K -->
-          <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-2.5 space-y-1">
-            <span class="font-bold text-rose-950 block flex items-center gap-1">
-              <i class="fa-solid fa-rotate text-[10px]"></i> 5) Rotación ${state.R.angle}° (${state.R.dir}) con Pivote K = (${state.R.kx}; ${state.R.ky}) sobre ${data.targetName}
-            </span>
-            <div class="font-mono text-slate-700 pl-2 space-y-0.5">
-              <div>• Punto tomado: <strong>(${basePt.x}; ${basePt.y})</strong></div>
-              <div>• Paso 1 (Restar pivote K): (${basePt.x} - ${state.R.kx}; ${basePt.y} - ${state.R.ky}) = (${kRelX}; ${kRelY})</div>
-              <div>• Paso 2 (Aplicar regla canónica de giro): ${formulaText} = (${rotRelX}; ${rotRelY})</div>
-              <div>• Paso 3 (Volver a sumar pivote K): (${rotRelX} + ${state.R.kx}; ${rotRelY} + ${state.R.ky}) = <strong>(${rotFinX}; ${rotFinY})</strong></div>
-              <div class="text-rose-800 font-bold pt-1">➜ Resultado Final: (${rotFinX}; ${rotFinY})</div>
-            </div>
-          </div>` : ''}
         `;
         manualCalculationsContainer.appendChild(card);
       });
@@ -746,6 +753,9 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       if (document.activeElement !== finalReportArea) {
         finalReportArea.value = report;
       }
+      if (document.activeElement !== reportNarrative && !reportNarrative.dataset.userEdited) {
+        reportNarrative.value = reportExplanation();
+      }
     }
 
     // 6. EXPORTACIONES (SVG E IMAGEN PNG)
@@ -773,73 +783,78 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       const gridStep = Math.max(1, Math.ceil(Math.max(frame.maxX, frame.maxY) / 40));
       let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
-  <style>
-    .grid { stroke: #e2e8f0; stroke-width: 1; }
-    .axis { stroke: #0f172a; stroke-width: 2.5; }
-    .label { font-family: sans-serif; font-size: 12px; fill: #334155; }
-    .vtext { font-family: monospace; font-size: 11px; font-weight: bold; fill: #0f172a; }
-  </style>
   <defs>
     <clipPath id="primer-cuadrante">
       <rect x="${frame.originX}" y="${frame.margin.top}" width="${frame.plotWidth}" height="${frame.plotHeight}"/>
     </clipPath>
   </defs>
   <rect width="${svgW}" height="${svgH}" fill="#ffffff"/>
-  <text x="${frame.originX}" y="28" class="label" font-weight="bold">Plano cartesiano — primer cuadrante</text>
+  <text x="${frame.originX}" y="28" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">Plano cartesiano — primer cuadrante</text>
   <g inkscape:groupmode="layer" inkscape:label="01_Cuadricula_y_Ejes" id="capa_ejes" clip-path="url(#primer-cuadrante)">
 `;
 
       for (let x = 0; x <= frame.maxX; x += gridStep) {
         const p1 = toSvg(x, 0);
         const p2 = toSvg(x, frame.maxY);
-        svg += `    <line x1="${p1.sx}" y1="${p2.sy}" x2="${p1.sx}" y2="${p1.sy}" class="grid" />\n`;
-        svg += `    <text x="${parseFloat(p1.sx) + 4}" y="${frame.originY - 8}" class="label">${x}</text>\n`;
+        svg += `    <line x1="${p1.sx}" y1="${p2.sy}" x2="${p1.sx}" y2="${p1.sy}" stroke="#e2e8f0" stroke-width="1" />\n`;
+        svg += `    <text x="${parseFloat(p1.sx) + 4}" y="${frame.originY - 8}" font-family="sans-serif" font-size="12" fill="#334155">${x}</text>\n`;
       }
       for (let y = 0; y <= frame.maxY; y += gridStep) {
         const p1 = toSvg(0, y);
         const p2 = toSvg(frame.maxX, y);
-        svg += `    <line x1="${p1.sx}" y1="${p1.sy}" x2="${p2.sx}" y2="${p1.sy}" class="grid" />\n`;
-        if (y > 0) svg += `    <text x="${frame.originX + 5}" y="${parseFloat(p1.sy) - 5}" class="label">${y}</text>\n`;
+        svg += `    <line x1="${p1.sx}" y1="${p1.sy}" x2="${p2.sx}" y2="${p1.sy}" stroke="#e2e8f0" stroke-width="1" />\n`;
+        if (y > 0) svg += `    <text x="${frame.originX + 5}" y="${parseFloat(p1.sy) - 5}" font-family="sans-serif" font-size="12" fill="#334155">${y}</text>\n`;
       }
 
       const origin = toSvg(0, 0);
       const xEnd = toSvg(frame.maxX, 0);
       const yEnd = toSvg(0, frame.maxY);
-      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${xEnd.sx}" y2="${xEnd.sy}" class="axis" />\n`;
-      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${yEnd.sx}" y2="${yEnd.sy}" class="axis" />\n`;
-      svg += `    <text x="${parseFloat(xEnd.sx) - 30}" y="${parseFloat(xEnd.sy) - 10}" class="label" font-weight="bold">+X</text>\n`;
-      svg += `    <text x="${parseFloat(yEnd.sx) + 8}" y="${parseFloat(yEnd.sy) + 16}" class="label" font-weight="bold">+Y</text>\n`;
-      svg += `    <text x="${parseFloat(origin.sx) + 6}" y="${parseFloat(origin.sy) - 8}" class="label">O(0,0)</text>\n`;
+      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${xEnd.sx}" y2="${xEnd.sy}" stroke="#0f172a" stroke-width="2.5" />\n`;
+      svg += `    <line x1="${origin.sx}" y1="${origin.sy}" x2="${yEnd.sx}" y2="${yEnd.sy}" stroke="#0f172a" stroke-width="2.5" />\n`;
+      svg += `    <text x="${parseFloat(xEnd.sx) - 30}" y="${parseFloat(xEnd.sy) - 10}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">+X</text>\n`;
+      svg += `    <text x="${parseFloat(yEnd.sx) + 8}" y="${parseFloat(yEnd.sy) + 16}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">+Y</text>\n`;
+      svg += `    <text x="${parseFloat(origin.sx) + 6}" y="${parseFloat(origin.sy) - 8}" font-family="sans-serif" font-size="12" fill="#334155">O(0,0)</text>\n`;
       svg += `  </g>\n`;
 
       function appendSvgLayer(layer) {
         const dashAttr = layer.dashed ? 'stroke-dasharray="5,4"' : '';
-        let out = `  <g inkscape:groupmode="layer" inkscape:label="${layer.name}" clip-path="url(#primer-cuadrante)">\n`;
-        out += `    <polygon points="${polyPts(layer.points)}" stroke="${layer.stroke}" stroke-width="2.2" fill="${layer.fill}" ${dashAttr} />\n`;
+        let out = `  <g inkscape:groupmode="layer" inkscape:label="${escapeXml(layer.inkscapeLabel)}" clip-path="url(#primer-cuadrante)">\n`;
+        out += `    <polygon points="${polyPts(layer.points)}" stroke="${layer.stroke}" stroke-width="2.2" fill="${layer.stroke}" fill-opacity="${layer.fillOpacity}" ${dashAttr} />\n`;
         layer.points.forEach(p => {
           const s = toSvg(p.x, p.y);
           const suffix = { t: '_T', s: '_S', ts: '_TS', st: '_ST', r: '_R' }[layer.key] || '';
           out += `    <circle cx="${s.sx}" cy="${s.sy}" r="4.5" fill="${layer.stroke}" stroke="#ffffff" stroke-width="1.5" />\n`;
-          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" class="vtext">${p.name}${suffix}(${p.x};${p.y})</text>\n`;
+          out += `    <text x="${parseFloat(s.sx) + 6}" y="${parseFloat(s.sy) - 6}" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">${p.name}${suffix}(${p.x};${p.y})</text>\n`;
         });
+        if (layer.name) {
+          const centerX = layer.points.reduce((total, point) => total + point.x, 0) / layer.points.length;
+          const centerY = layer.points.reduce((total, point) => total + point.y, 0) / layer.points.length;
+          const center = toSvg(centerX, centerY);
+          out += `    <text x="${center.sx}" y="${center.sy}" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="${layer.stroke}">${escapeXml(layer.name)}</text>\n`;
+        }
         out += `  </g>\n`;
         return out;
       }
 
       for (const layer of frame.layers) svg += appendSvgLayer(layer);
 
-      svg += `  <g inkscape:groupmode="layer" inkscape:label="08_Pivotes" clip-path="url(#primer-cuadrante)">\n`;
-      if (state.layers.s || state.layers.ts || state.layers.st) {
+      const showScalePivot = (state.layers.s || state.layers.ts || state.layers.st) && hasScalePivotCoordinates();
+      const showRotationPivot = state.layers.r && data.rotationEnabled;
+      if (showScalePivot || showRotationPivot) {
+        svg += `  <g inkscape:groupmode="layer" inkscape:label="Pivotes" clip-path="url(#primer-cuadrante)">\n`;
+      }
+      if (showScalePivot) {
         const spP = toSvg(state.S.px, state.S.py);
         svg += `    <circle cx="${spP.sx}" cy="${spP.sy}" r="5" fill="#fef3c7" stroke="#b45309" stroke-width="2" />\n`;
-        svg += `    <text x="${parseFloat(spP.sx) + 8}" y="${parseFloat(spP.sy) + 4}" class="vtext" fill="#b45309">P(${state.S.px};${state.S.py})</text>\n`;
+        svg += `    <text x="${parseFloat(spP.sx) + 8}" y="${parseFloat(spP.sy) + 4}" font-family="monospace" font-size="11" font-weight="bold" fill="#b45309">P(${state.S.px};${state.S.py})</text>\n`;
       }
-      if (data.rotationEnabled) {
+      if (showRotationPivot) {
         const spK = toSvg(state.R.kx, state.R.ky);
         svg += `    <circle cx="${spK.sx}" cy="${spK.sy}" r="6" fill="#ffe4e6" stroke="#be123c" stroke-width="2" />\n`;
-        svg += `    <text x="${parseFloat(spK.sx) + 8}" y="${parseFloat(spK.sy) - 6}" class="vtext" fill="#be123c">K(${state.R.kx};${state.R.ky})</text>\n`;
+        svg += `    <text x="${parseFloat(spK.sx) + 8}" y="${parseFloat(spK.sy) - 6}" font-family="monospace" font-size="11" font-weight="bold" fill="#be123c">K(${state.R.kx};${state.R.ky})</text>\n`;
       }
-      svg += `  </g>\n</svg>`;
+      if (showScalePivot || showRotationPivot) svg += `  </g>\n`;
+      svg += `</svg>`;
 
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -946,17 +961,11 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
         const centerX = layer.points.reduce((total, point) => total + point.x, 0) / layer.points.length;
         const centerY = layer.points.reduce((total, point) => total + point.y, 0) / layer.points.length;
         const center = frame.toCanvas(centerX, centerY);
-        const label = {
-          orig: 'Original',
-          t: 'Solo T',
-          s: 'Solo S',
-          ts: 'T → S',
-          st: 'S → T',
-          r: `Rotación (${state.R.angle}°)`
-        }[layer.key];
-        ctx.fillStyle = layer.stroke;
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(label, center.x - 20, center.y);
+        if (layer.name) {
+          ctx.fillStyle = layer.stroke;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText(layer.name, center.x - ctx.measureText(layer.name).width / 2, center.y);
+        }
         ctx.restore();
       }
 
@@ -974,7 +983,7 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
         ctx.fillText(`${label}(${x};${y})`, point.x + 8, point.y - 6);
       }
 
-      if (state.layers.s || state.layers.ts || state.layers.st) {
+      if ((state.layers.s || state.layers.ts || state.layers.st) && hasScalePivotCoordinates()) {
         drawPivot(state.S.px, state.S.py, 'P', '#fef3c7', '#b45309');
       }
       if (state.layers.r && data.rotationEnabled) {
@@ -1027,6 +1036,10 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       state.layers.ts = document.getElementById('layer_ts').checked;
       state.layers.st = document.getElementById('layer_st').checked;
       state.layers.r = document.getElementById('layer_r').checked;
+      for (const key of figureKeys) {
+        state.figureStyles[key].name = document.getElementById(`figureName_${key}`).value;
+        state.figureStyles[key].color = document.getElementById(`figureColor_${key}`).value;
+      }
 
       renderCanvas();
       updateAllPanels();
@@ -1053,50 +1066,6 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       readInputs();
     });
 
-    // 8. PIZARRA / BLOC DE APUNTES Y LOCALSTORAGE
-    // Cargar notas guardadas previamente
-    const savedNotes = localStorage.getItem('a03_scratchpad');
-    if (savedNotes) {
-      scratchpadArea.value = savedNotes;
-    }
-
-    scratchpadArea.addEventListener('input', () => {
-      localStorage.setItem('a03_scratchpad', scratchpadArea.value);
-      scratchpadSaveStatus.classList.remove('hidden');
-      setTimeout(() => scratchpadSaveStatus.classList.add('hidden'), 2000);
-    });
-
-    document.getElementById('btnClearScratchpad').addEventListener('click', () => {
-      scratchpadArea.value = '';
-      localStorage.removeItem('a03_scratchpad');
-    });
-
-    // Pegar cálculos actuales a la pizarra
-    document.getElementById('btnInsertCalculationsToBoard').addEventListener('click', () => {
-      const data = computeGeometry();
-      if (!data) {
-        window.alert('Completa las coordenadas de A, B y C antes de insertar cálculos.');
-        return;
-      }
-      const timestamp = new Date().toLocaleTimeString();
-      let log = `\n--- REGISTRO DE MEDIDAS Y CÁLCULOS [${timestamp}] ---\n`;
-      log += `• Original: A(${state.A.x},${state.A.y}), B(${state.B.x},${state.B.y}), C(${state.C.x},${state.C.y})\n`;
-      log += `• Traslación: T=(${state.T.dx},${state.T.dy})\n`;
-      log += `• Escala: S=(${state.S.sx},${state.S.sy}) | Pivote P=(${state.S.px},${state.S.py})\n`;
-      log += `• Rotación: ${data.rotationEnabled ? `${state.R.angle}° (${state.R.dir}) | Pivote K=(${state.R.kx},${state.R.ky})` : 'Sin configurar'}\n`;
-      log += `RESULTADOS:\n`;
-      data.orig.forEach((p, i) => {
-        log += `  - ${p.name}: T->(${data.tOnly[i].x},${data.tOnly[i].y}) | S->(${data.sOnly[i].x},${data.sOnly[i].y}) | T->S->(${data.tsFinal[i].x},${data.tsFinal[i].y}) | S->T->(${data.stFinal[i].x},${data.stFinal[i].y}) | R->(${data.rotFinal[i].x},${data.rotFinal[i].y})\n`;
-      });
-      log += `----------------------------------------------------\n`;
-
-      scratchpadArea.value += log;
-      localStorage.setItem('a03_scratchpad', scratchpadArea.value);
-      scratchpadArea.scrollTop = scratchpadArea.scrollHeight;
-      scratchpadSaveStatus.classList.remove('hidden');
-      setTimeout(() => scratchpadSaveStatus.classList.add('hidden'), 2000);
-    });
-
     // Mandato: Guardar y resetear
     document.getElementById('btnResetDefaultMandate').addEventListener('click', () => {
       mandateTextArea.value = '';
@@ -1110,6 +1079,198 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
       setTimeout(() => copyToast.classList.add('hidden'), 3500);
     });
 
+    function renderReportImages() {
+      reportImageList.replaceChildren();
+      reportImages.forEach(image => {
+        const card = document.createElement('div');
+        card.className = 'rounded-lg border border-slate-200 bg-white p-2';
+        const preview = document.createElement('img');
+        preview.src = image.dataUrl;
+        preview.alt = `Vista previa de ${image.name}`;
+        preview.className = 'h-28 w-full rounded object-contain';
+        const footer = document.createElement('div');
+        footer.className = 'mt-1 flex items-center justify-between gap-2';
+        const filename = document.createElement('span');
+        filename.className = 'truncate text-[10px] text-slate-600';
+        filename.textContent = image.name;
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'shrink-0 rounded px-2 py-1 text-[10px] font-semibold text-rose-700 hover:bg-rose-50';
+        remove.textContent = 'Quitar';
+        remove.setAttribute('aria-label', `Quitar ${image.name}`);
+        remove.addEventListener('click', () => {
+          const index = reportImages.findIndex(item => item.id === image.id);
+          if (index !== -1) reportImages.splice(index, 1);
+          renderReportImages();
+          reportImageStatus.textContent = `${reportImages.length} imagen(es) preparada(s).`;
+        });
+        footer.append(filename, remove);
+        card.append(preview, footer);
+        reportImageList.appendChild(card);
+      });
+    }
+
+    function readImageFile(file) {
+      if (!file.type.startsWith('image/')) {
+        return Promise.reject(new Error(`${file.name} no es un archivo de imagen.`));
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          if (typeof reader.result !== 'string') {
+            reject(new Error(`No se pudo leer la imagen ${file.name}.`));
+            return;
+          }
+          resolve({ id: nextReportImageId++, name: file.name, dataUrl: reader.result });
+        });
+        reader.addEventListener('error', () => reject(reader.error || new Error(`No se pudo leer la imagen ${file.name}.`)));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('reportImageInput').addEventListener('change', async event => {
+      const imageInput = event.currentTarget;
+      const files = [...imageInput.files];
+      if (!files.length) return;
+      reportImageStatus.textContent = 'Cargando imágenes…';
+      try {
+        const loadedImages = await Promise.all(files.map(readImageFile));
+        reportImages.push(...loadedImages);
+        renderReportImages();
+        reportImageStatus.textContent = `${reportImages.length} imagen(es) preparada(s) para el PDF.`;
+        imageInput.value = '';
+      } catch (error) {
+        reportImageStatus.textContent = error.message;
+      }
+    });
+
+    function addPrintText(parent, tagName, text, className = '') {
+      const element = document.createElement(tagName);
+      element.textContent = text;
+      if (className) element.className = className;
+      parent.appendChild(element);
+      return element;
+    }
+
+    function preparePrintReport() {
+      const data = computeGeometry();
+      if (!data) {
+        window.alert('Completa las coordenadas de A, B y C antes de preparar el informe.');
+        return;
+      }
+
+      const printDocument = document.getElementById('printDocument');
+      printDocument.replaceChildren();
+      printDocument.setAttribute('aria-hidden', 'false');
+
+      addPrintText(printDocument, 'h1', 'Informe de transformaciones geométricas');
+      addPrintText(printDocument, 'p', 'Laboratorio de Transformaciones Geométricas 2D · Código A03');
+      const metadata = document.createElement('div');
+      metadata.className = 'print-meta';
+      addPrintText(metadata, 'p', `Estudiante: ${document.getElementById('reportStudentName').value || '—'}`);
+      addPrintText(metadata, 'p', `Asignatura: ${document.getElementById('reportCourseName').value || '—'}`);
+      addPrintText(metadata, 'p', `Fecha: ${new Date().toLocaleDateString('es-ES')}`);
+      addPrintText(metadata, 'p', 'Sistema de coordenadas: eje X hacia la derecha y eje Y hacia arriba.');
+      printDocument.appendChild(metadata);
+
+      addPrintText(printDocument, 'h2', 'Explicación del procedimiento');
+      addPrintText(printDocument, 'p', reportNarrative.value.trim() || 'No se agregó una explicación.');
+
+      addPrintText(printDocument, 'h2', 'Reglas de transformación');
+      const rules = document.createElement('ul');
+      [
+        `Traslación: (x; y) → (x + ${state.T.dx}; y + ${state.T.dy}).`,
+        `Escala con pivote P: (x; y) → (${state.S.px} + ${state.S.sx}(x − ${state.S.px}); ${state.S.py} + ${state.S.sy}(y − ${state.S.py})).`,
+        'Orden T → S: aplicar primero la traslación y luego la escala.',
+        'Orden S → T: aplicar primero la escala y luego la traslación.',
+        ...(data.rotationEnabled ? [
+          `Giro: restar K=(${state.R.kx}; ${state.R.ky}), rotar ${state.R.angle}° ${state.R.dir} y volver a sumar el pivote.`
+        ] : [])
+      ].forEach(line => addPrintText(rules, 'li', line));
+      printDocument.appendChild(rules);
+
+      addPrintText(printDocument, 'h2', 'Parámetros utilizados');
+      const parameters = document.createElement('ul');
+      [
+        `Traslación: T = (${state.T.dx}; ${state.T.dy}).`,
+        `Escala: S = (${state.S.sx}; ${state.S.sy}), con pivote P = (${state.S.px}; ${state.S.py}).`,
+        data.rotationEnabled
+          ? `Rotación: ${state.R.angle}° ${state.R.dir}, con pivote K = (${state.R.kx}; ${state.R.ky}), aplicada a ${data.targetName}.`
+          : 'Rotación: no aplicada.'
+      ].forEach(line => addPrintText(parameters, 'li', line));
+      printDocument.appendChild(parameters);
+
+      addPrintText(printDocument, 'h2', 'Tabla de coordenadas');
+      const table = document.createElement('table');
+      table.className = 'print-table';
+      const headings = ['Vértice', 'Original', 'Solo T', 'Solo S', 'T → S', 'S → T', 'Rotación'];
+      const head = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      headings.forEach(heading => addPrintText(headRow, 'th', heading));
+      head.appendChild(headRow);
+      table.appendChild(head);
+      const body = document.createElement('tbody');
+      data.orig.forEach((point, index) => {
+        const row = document.createElement('tr');
+        [
+          point.name,
+          `(${point.x}; ${point.y})`,
+          `(${data.tOnly[index].x}; ${data.tOnly[index].y})`,
+          `(${data.sOnly[index].x}; ${data.sOnly[index].y})`,
+          `(${data.tsFinal[index].x}; ${data.tsFinal[index].y})`,
+          `(${data.stFinal[index].x}; ${data.stFinal[index].y})`,
+          data.rotationEnabled ? `(${data.rotFinal[index].x}; ${data.rotFinal[index].y})` : '—'
+        ].forEach(value => addPrintText(row, 'td', value));
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      printDocument.appendChild(table);
+
+      addPrintText(printDocument, 'h2', 'Gráfico de las capas visibles');
+      const graph = document.createElement('img');
+      graph.src = canvas.toDataURL('image/png');
+      graph.alt = 'Plano cartesiano con las figuras actualmente visibles';
+      graph.className = 'print-graph';
+      printDocument.appendChild(graph);
+
+      if (reportConclusion.value.trim()) {
+        addPrintText(printDocument, 'h2', 'Observaciones y conclusión');
+        addPrintText(printDocument, 'p', reportConclusion.value.trim());
+      }
+
+      if (reportImages.length) {
+        addPrintText(printDocument, 'h2', 'Imágenes y evidencias');
+        reportImages.forEach(image => {
+          const item = document.createElement('div');
+          item.className = 'print-evidence-item';
+          addPrintText(item, 'p', image.name);
+          const element = document.createElement('img');
+          element.src = image.dataUrl;
+          element.alt = image.name;
+          element.className = 'print-evidence';
+          item.appendChild(element);
+          printDocument.appendChild(item);
+        });
+      }
+
+      const imageLoads = [...printDocument.querySelectorAll('img')].map(image => image.decode());
+      Promise.all(imageLoads).then(() => {
+        window.print();
+      }).catch(error => {
+        reportImageStatus.textContent = `No se pudo preparar una imagen para imprimir: ${error.message}`;
+      });
+    }
+
+    document.getElementById('btnExportPDF').addEventListener('click', preparePrintReport);
+    reportNarrative.addEventListener('input', () => {
+      reportNarrative.dataset.userEdited = 'true';
+    });
+    window.addEventListener('afterprint', () => {
+      const printDocument = document.getElementById('printDocument');
+      printDocument.replaceChildren();
+      printDocument.setAttribute('aria-hidden', 'true');
+    });
+
     // Exportar SVG y PNG
     document.getElementById('btnExportSVG').addEventListener('click', exportInkscapeSVG);
     document.getElementById('btnExportPNG').addEventListener('click', exportPNG);
@@ -1118,7 +1279,6 @@ C       | (${data.orig[2].x}; ${data.orig[2].y})   | (${data.tOnly[2].x}; ${data
     const tabsList = [
       { btn: document.getElementById('tab_table'), panel: document.getElementById('panel_table') },
       { btn: document.getElementById('tab_formulas'), panel: document.getElementById('panel_formulas') },
-      { btn: document.getElementById('tab_scratchpad'), panel: document.getElementById('panel_scratchpad') },
       { btn: document.getElementById('tab_mandate'), panel: document.getElementById('panel_mandate') },
       { btn: document.getElementById('tab_report'), panel: document.getElementById('panel_report') }
     ];
